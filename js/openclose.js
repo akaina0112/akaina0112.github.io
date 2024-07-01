@@ -10,195 +10,63 @@ window.onload = function() {
 // main.js
 
 window.addEventListener('load', get);
-
-
-function get() {
-            // 背景用のオーバーレイ要素を生成
-            var overlay = document.createElement('div');
-            overlay.id = 'overlay';
-            overlay.style.display = 'none'; // 最初は非表示
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // 半透明の黒背景
-            overlay.style.zIndex = '1';
-            document.body.appendChild(overlay);
-
-            // テキストを表示するコンテナ要素を生成
-            var textContainer = document.createElement('div');
-            textContainer.id = 'text-container';
-            textContainer.style.display = 'none'; // 最初は非表示
-            textContainer.style.position = 'fixed';
-            textContainer.style.top = '50%';
-            textContainer.style.left = '50%';
-            textContainer.style.transform = 'translate(-50%, -50%)';
-            textContainer.style.textAlign = 'center';
-            textContainer.style.color = 'white';
-            textContainer.style.zIndex = '2';
-
-            // テキストコンテンツを生成
-            var heading = document.createElement('h2');
-            heading.textContent = 'akaina site';
-            heading.classList.add('glowing-text'); // 光るテキストのクラスを追加
-            textContainer.appendChild(heading);
-
-            var paragraph = document.createElement('p');
-            paragraph.textContent = 'Play BGM.';
-            paragraph.classList.add('glowing-text'); // 光るテキストのクラスを追加
-            textContainer.appendChild(paragraph);
-
-            // OKボタンを生成してテキストコンテナに追加
-            var okButton = document.createElement('button');
-            okButton.textContent = 'OK';
-            okButton.style.display = 'flex';
-            okButton.style.justifyContent = 'center';
-            okButton.style.alignItems = 'center';
-            okButton.style.width = '250px';
-            okButton.style.margin = '0 auto';
-            okButton.style.padding = '.9em 2em';
-            okButton.style.border = 'none';
-            okButton.style.borderRadius = '25px';
-            okButton.style.backgroundColor = '#2589d0';
-            okButton.style.color = '#fff';
-            okButton.style.fontWeight = '600';
-            okButton.style.fontSize = '1em';
-            okButton.style.cursor = 'pointer';
-            okButton.style.transition = 'background-color 0.3s, transform 0.3s';
-            okButton.classList.add('button'); // ボタンにクラスを追加
-            okButton.onclick = function() {
-                // OKボタンがクリックされたときの処理
-                closeOverlay();
-	        createAndPlayAudio();
-            };
-            textContainer.appendChild(okButton);
-
-            document.body.appendChild(textContainer);
-
-        /*    // スタイル要素を生成してボタンのホバー時のアニメーションを設定する
-            var style = document.createElement('style');
-            style.textContent = `
-
-            `;
-            document.head.appendChild(style);*/
-
-            // ページ読み込み後に背景を暗くしてテキストを表示する関数
-            function openModal() {
-                overlay.style.display = 'block';
-                textContainer.style.display = 'block';
+    // ページが読み込まれたときに実行する初期化処理
+    document.addEventListener('DOMContentLoaded', function() {
+        // CSSスタイルを動的に生成する
+        var style = document.createElement('style');
+        style.textContent = `
+            body, html {
+                height: 100%;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
-
-            // モーダルを閉じる関数
-            function closeOverlay() {
-                overlay.style.display = 'none';
-                textContainer.style.display = 'none';
+            
+            .full-screen-image {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-size: cover;
+                background-position: center;
+                display: none; /* 最初は非表示 */
             }
+        `;
+        document.head.appendChild(style); // <style> 要素を head に追加
 
-            // openModal関数を実行する例として、ページ読み込み時に実行する
-            openModal();
-  
-
-
-  // JavaScriptでCSSスタイルを適用する場合
-  const style = document.createElement('style');
-  style.textContent = `
-          /* ボタンのスタイル */
-        .button {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 250px;
-            margin: 0 auto;
-            padding: .9em 2em;
-            border: none;
-            border-radius: 25px;
-            background-color: #2589d0;
-            color: #fff;
-            font-weight: 600;
-            font-size: 1em;
-            cursor: pointer; /* ホバー時のカーソルをポインターにする */
-            transition: background-color 0.3s, transform 0.3s; /* ホバー時のトランジションを設定 */
-            background-color: #1c6ea4; /* ホバー時の背景色 */
-            animation: anime-button-38 .3s linear infinite; /* ホバー時のアニメーションを適用 */
+        // 画像がタップされたときの処理
+        function removeImage() {
+            var imageContainer = document.getElementById('imageContainer');
+            imageContainer.style.opacity = '0'; // 透明度を変更してフェードアウトさせるなどのアニメーションを適用することもできる
+            setTimeout(function() {
+                imageContainer.remove(); // 要素を削除する
+            }, 500); // 0.5秒後に要素を削除する、適切な時間を設定
         }
 
-        .button:hover {
-            background-color: #1c6ea4; /* ホバー時の背景色 */
-            animation: anime-button-38 .3s linear infinite; /* ホバー時のアニメーションを適用 */
+        // 画像を表示する関数
+        function showImage(imageUrl) {
+            var imageContainer = document.createElement('div'); // 新しい <div> 要素を作成
+            imageContainer.id = 'imageContainer'; // id を設定
+            imageContainer.classList.add('full-screen-image'); // クラスを設定
+            imageContainer.style.backgroundImage = 'url(' + imageUrl + ')'; // 背景画像を設定
+            document.body.appendChild(imageContainer); // body に追加
+
+            // タップ（クリック）イベントを設定する
+            imageContainer.addEventListener('click', function() {
+                removeImage();
+            });
+            
+            imageContainer.style.display = 'block'; // 画像を表示する
         }
 
-        @keyframes anime-button-38 {
-            20% {
-                transform: translate(-2px, 2px);
-            }
-            40% {
-                transform: translate(-2px, -2px);
-            }
-            60% {
-                transform: translate(2px, 2px);
-            }
-            80% {
-                transform: translate(2px, -2px);
-            }
-        }
+        // 画像を表示する（例としてURLを指定）
+        var imageUrl = 'path/to/your/image.jpg'; // 画像のパスを指定する
+        showImage(imageUrl);
+    });
 
-        /* 光るテキストのスタイル */
-        .glowing-text {
-            color: #fff;
-            text-shadow: 0 0 10px #00f, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #0ff, 0 0 70px #0ff, 0 0 80px #0ff, 0 0 100px #0ff, 0 0 150px #0ff;
-        }
-  *{text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);}
-
-
-    .music-info {
-      display: none; /* 初期状態では非表示 */
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(0, 0, 0, 0.7); /* 背景色を濃くしてコントラストを高める */
-      color: white;
-      padding: 20px 30px; /* パディングを増やして読みやすくする */
-      border-radius: 8px; /* 角を丸くする */
-      font-size: 16px; /* フォントサイズを大きくする */
-      font-weight: bold; /* フォントウェイトを太くする */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* シャドウを追加して視認性を高める */
-      text-align: center; /* テキストを中央揃え */
-      z-index: 9999; /* 最前面に表示 */
-      transition: top 0.3s ease, opacity 0.3s ease; /* トランジション効果を追加 */
-      /* テキストを光らせる効果 */
-  　　text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* 白色のぼかしを追加して光らせる */
-    }
-
-    /* 表示用のクラス */
-    .show {
-      display: block;
-      top: 20px;
-      opacity: 1;
-    }#info{
-	display: none;
-}
-
-/*モーダルの横幅を変更したい場合*/
-.modaal-container{
-    max-width: 600px;
-}
-
-/*モーダルのボタンの色を変更したい場合*/
-.modaal-close:after, 
-.modaal-close:before{
-	background:#ccc;	
-}
-
-.modaal-close:focus:after,
-.modaal-close:focus:before,
-.modaal-close:hover:after,
-.modaal-close:hover:before{
-	background:#666;
-}
-  `;
-
+function get() { 
   // head要素にスタイルを追加する
   document.head.appendChild(style);
 
@@ -249,7 +117,7 @@ function get() {
   }
 
   // ページをクリックしたときに createAndPlayAudio 関数を実行
-  //document.body.addEventListener('click', createAndPlayAudio);
+  document.body.addEventListener('click', createAndPlayAudio);
 
   // アニメーションを切り替え関数
   function switchSlide() {
