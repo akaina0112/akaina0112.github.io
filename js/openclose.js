@@ -74,13 +74,12 @@ function get() {
     // 音楽情報の表示を通知風に
     setTimeout(() => {
       musicInfo.classList.add('show'); // 'show'クラスを追加して表示
-      console.log('音楽名を表示');
+      console.log('音楽名: Nightcore - Vicetone - Nevada');
     }, 50); // 少し遅延させて表示（ミリ秒単位）
 
     // 5秒後に音楽情報を消す
     setTimeout(() => {
       musicInfo.classList.remove('show'); // 'show'クラスを削除して非表示
-      console.log('音楽名を消去');
     }, 4100); // 5秒後に消えるように設定（ミリ秒単位）
 
 
