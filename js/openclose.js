@@ -55,6 +55,7 @@ function get() {
     var volumePercentage = 5; // 5%の音量を設定したい場合
     // パーセンテージを0から1の範囲に変換して音量を設定
     audioElement.volume = volumePercentage / 100;//音量設定
+　　console.log('現在の音量:', audioElement.volume);//音量確認
 
     // 音楽ファイルの設定
     const sourceElement = document.createElement('source');
