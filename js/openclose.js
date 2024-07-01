@@ -45,9 +45,6 @@ window.addEventListener('load', get);
 
 function get() { 
 	go();
-  // head要素にスタイルを追加する
-  document.head.appendChild(style);
-
   // 音楽プレーヤーを作成し再生する関数
   function createAndPlayAudio() {
     // 音楽プレーヤーを作成
