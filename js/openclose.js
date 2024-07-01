@@ -12,21 +12,6 @@ window.onload = function() {
 window.addEventListener('load', get);
     // ページが読み込まれたときに実行する初期化処理
  function go() {
-        // CSSスタイルを動的に生成する
-        var style = document.createElement('style');
-        style.textContent = `
-              .full-screen-image {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-size: cover;
-                background-position: center;
-                display: none; /* 最初は非表示 */
-            }
-        `;
-        document.head.appendChild(style); // <style> 要素を head に追加
 
         // 画像がタップされたときの処理
         function removeImage() {
@@ -146,6 +131,16 @@ switchSlide2();
             // CSSを動的に生成す
             const style = document.createElement('style');
             style.textContent = `
+	    .full-screen-image {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-size: cover;
+                background-position: center;
+                display: none; /* 最初は非表示 */
+            }
                 #notification {
                     display: none;
                     position: fixed;
