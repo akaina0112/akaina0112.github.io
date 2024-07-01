@@ -15,15 +15,7 @@ window.addEventListener('load', get);
         // CSSスタイルを動的に生成する
         var style = document.createElement('style');
         style.textContent = `
-            body, html {
-                height: 100%;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            
-            .full-screen-image {
+              .full-screen-image {
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -62,7 +54,7 @@ window.addEventListener('load', get);
         }
 
         // 画像を表示する（例としてURLを指定）
-        var imageUrl = 'https://github.com/akaina0112/akaina0112.github.io/blob/main/images/2.jpg'; // 画像のパスを指定する
+        var imageUrl = '../images/2.jpg'; // 画像のパスを指定する
         showImage(imageUrl);
 );
 
