@@ -51,7 +51,7 @@ function get() {
     const audioElement = document.createElement('audio');
     audioElement.id = 'musicplayer';
     audioElement.loop = true; // ループ再生
-    audioElement.volume = 0.2; // 音量設定
+    audioElement.volume = 0.1; // 音量設定
 
     // 音楽ファイルの設定
     const sourceElement = document.createElement('source');
