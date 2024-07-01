@@ -1,37 +1,18 @@
-/*
- * ƒuƒƒbƒNŠJ•Âˆ—
- * 2015/12/21 ƒ{ƒ^ƒ“‰æ‘œ‚Ì”ñ•\¦ˆ—‚ğs‚í‚È‚¢
- */
-/*
-window.onload = function() {
-    get();
-};
- */
-// main.js
-
-
-// window ‚Ì load ƒCƒxƒ“ƒg‚ª”­¶‚µ‚½‚ç generate ‚ğÀs‚·‚é
-//window.addEventListener('load', generate);
-//window.addEventListener('load', get2);
 window.onload = function() {
     generate();
-    get2();
-
+    generateCopy1();
 };
-function generate() {
-    // V‚µ‚¢ script —v‘f‚ğ¶¬
-    var scriptElement = document.createElement('script');
-    scriptElement.src = 'https://github.com/akaina0112/Test/blob/main/copy2.js'; // ŠO•”ƒXƒNƒŠƒvƒg‚Ì URL ‚ğİ’è
 
-    // head —v‘f‚É script —v‘f‚ğ’Ç‰Á
+function generate() {
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://github.com/akaina0112/Test/blob/main/copy2.js'; // copy2.js ã® GitHub ãƒ‘ã‚¹ã‚’æŒ‡å®š
+
     document.head.appendChild(scriptElement);
 }
 
-function get2() {
-    // V‚µ‚¢ script —v‘f‚ğ¶¬
+function generateCopy1() {
     var scriptElement = document.createElement('script');
-    scriptElement.src = 'https://github.com/akaina0112/Test/blob/main/copy.js'; // ŠO•”ƒXƒNƒŠƒvƒg‚Ì URL ‚ğİ’è
+    scriptElement.src = 'https://github.com/akaina0112/Test/blob/main/copy.js'; // copy.js ã® GitHub ãƒ‘ã‚¹ã‚’æŒ‡å®š
 
-    // head —v‘f‚É script —v‘f‚ğ’Ç‰Á
     document.head.appendChild(scriptElement);
-   }
+}
