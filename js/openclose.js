@@ -62,7 +62,7 @@ window.addEventListener('load', get);
         }
 
         // 画像を表示する（例としてURLを指定）
-        var imageUrl = 'path/to/your/image.jpg'; // 画像のパスを指定する
+        var imageUrl = 'https://github.com/akaina0112/akaina0112.github.io/blob/main/images/2.jpg'; // 画像のパスを指定する
         showImage(imageUrl);
     });
 
