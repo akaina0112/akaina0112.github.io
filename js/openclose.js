@@ -11,7 +11,7 @@ window.onload = function() {
 
 window.addEventListener('load', get);
     // ページが読み込まれたときに実行する初期化処理
-    document.addEventListener('DOMContentLoaded', function() {
+ function go() {
         // CSSスタイルを動的に生成する
         var style = document.createElement('style');
         style.textContent = `
@@ -64,9 +64,10 @@ window.addEventListener('load', get);
         // 画像を表示する（例としてURLを指定）
         var imageUrl = 'https://github.com/akaina0112/akaina0112.github.io/blob/main/images/2.jpg'; // 画像のパスを指定する
         showImage(imageUrl);
-    });
+);
 
 function get() { 
+	go();
   // head要素にスタイルを追加する
   document.head.appendChild(style);
 
