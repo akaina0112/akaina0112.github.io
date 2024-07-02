@@ -52,7 +52,7 @@ function get() {
     audioElement.id = 'musicplayer';
     audioElement.loop = true; // ループ再生
 	  
-    var volumePercentage = 15; // 詳細の音量を設定したい場合
+    var volumePercentage = 5; // 詳細の音量を設定したい場合
     // パーセンテージを0から1の範囲に変換して音量を設定
     audioElement.volume = volumePercentage / 100;//音量設定
 　　console.log('現在の音量:', audioElement.volume);//音量確認
