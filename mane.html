@@ -38,11 +38,15 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
             padding: 20px;
             border: 1px solid #000;
         }
+                canvas {
+            border: 1px solid #000; /* キャンバスの境界線 */
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>2つのテキストボックスの入力を表示する例</h1>
-
+<copy>
     <!-- ユーザーが文字を入力する2つのテキストボックス -->
     <input type="text" id="inputText1" placeholder="タイトル">
     <input type="text" id="inputText2" placeholder="文字入力">
@@ -50,10 +54,15 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
     <!-- 入力された文字を表示する2つの場所 -->
     <h1 class="display-box" id="display1">ここにタイトルが表示されます</h1>
     <p class="display-box" id="display2">ここに文字が表示されます</p>
-    
+</copy>
 
     <button onclick="changeFont('akaina')">Microsoft フォントに切り替え</button>
     <button onclick="changeFont('GenbaGothic')">GenbaGothic フォントに切り替え</button>
+    
+    <button onclick="generateImage()">画像を生成</button>
+    <a id="downloadLink" style="display:none;">画像をダウンロード</a>
+
+    <canvas id="canvas" width="400" height="200"></canvas>
     <script>
         // 1つ目のテキストボックスと表示場所
         const inputField1 = document.getElementById('inputText1');
@@ -75,6 +84,37 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
       function changeFont(fontName) {
             document.getElementById('display1').style.fontFamily = fontName;
            document.getElementById('display2').style.fontFamily = fontName;
+        }
+        
+    </script>
+       <script>
+        function generateImage() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // キャンバスをクリア
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 入力されたテキストを取得
+            const title = document.getElementById('inputText1').value;
+            const text = document.getElementById('inputText2').value;
+
+            // フォントの設定
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'black';
+
+            // タイトルを描画
+            ctx.fillText(title || "ここにタイトルが表示されます", canvas.width / 2, 50);
+            // 文字を描画
+            ctx.fillText(text || "ここに文字が表示されます", canvas.width / 2, 100);
+
+            // 画像データを生成し、ダウンロードリンクを作成
+            const link = document.getElementById('downloadLink');
+            link.href = canvas.toDataURL('image/png'); // 画像データURL
+            link.download = 'generated_image.png'; // ダウンロードする画像名
+            link.textContent = '画像をダウンロード';
+            link.style.display = 'inline'; // リンクを表示
         }
     </script>
 </body>
