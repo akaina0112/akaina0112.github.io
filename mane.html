@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2つのテキストボックスの入力を画像にする</title>
+    <title>テキストエリアの内容を画像にする例</title>
     <style>
         @font-face {
             font-family: "akaina";
@@ -72,14 +72,19 @@
             const titleLines = document.getElementById('inputText1').value.split('\n');
             const textLines = document.getElementById('inputText2').value.split('\n');
 
-            // フォントの設定
-            let fontSize = Math.min(canvas.width / 15, 30); // キャンバス幅に基づいてフォントサイズを設定
-            ctx.font = `${fontSize}px ${currentFont}`;
+            // フォントの初期設定
             ctx.textAlign = 'center';
             ctx.fillStyle = 'black'; // 文字色
 
-            // 各行をキャンバスに描画
+            // 最大フォントサイズを設定
+            const maxFontSize = Math.min(canvas.width / 10, canvas.height / (titleLines.length + textLines.length + 1)); // 最大フォントサイズを計算
+            let fontSize = Math.min(maxFontSize, 40); // 最大40pxまで
+            ctx.font = `${fontSize}px ${currentFont}`;
+
+            // 行間の設定
             const lineHeight = fontSize * 1.2; // 行間
+
+            // Y座標の初期化
             let yOffset = canvas.height / 4; // 初期のY座標
 
             // タイトルを描画
