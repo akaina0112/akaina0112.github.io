@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2つのテキストボックスの入力を表示</title>
     <style>
-
-@font-face {
-    font-family: "akaina";
-    src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/PixelMplus12-Regular.ttf") format("truetype");
-} 
- @font-face{
-font-family: GenbaGothic;
-src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
-     format("woff2");
-}
+        @font-face {
+            font-family: "akaina";
+            src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/PixelMplus12-Regular.ttf") format("truetype");
+        } 
+        @font-face {
+            font-family: GenbaGothic;
+            src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2') format("woff2");
+        }
         .display-box {
             margin: 20px 0; /* 上下にマージンを追加 */
         }
@@ -31,30 +29,34 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
             text-align: center; /* 中央揃え */
         }
 
-
-
-         .font-box {
+        .font-box {
             margin: 20px;
             padding: 20px;
             border: 1px solid #000;
         }
-                canvas {
+        canvas {
             border: 1px solid #000; /* キャンバスの境界線 */
             margin-top: 20px;
+        }
+        textarea {
+            width: 80%; /* 幅を調整 */
+            height: 50px; /* 高さを調整 */
+            margin: 10px 0; /* 上下のマージンを追加 */
+            font-family: 'akaina'; /* デフォルトフォント */
         }
     </style>
 </head>
 <body>
     <h1>2つのテキストボックスの入力を表示する例</h1>
-<copy>
-    <!-- ユーザーが文字を入力する2つのテキストボックス -->
-    <input type="text" id="inputText1" placeholder="タイトル">
-    <input type="text" id="inputText2" placeholder="文字入力">
+    <div>
+        <!-- ユーザーが文字を入力する2つのテキストエリア -->
+        <textarea id="inputText1" placeholder="タイトル"></textarea>
+        <textarea id="inputText2" placeholder="文字入力"></textarea>
 
-    <!-- 入力された文字を表示する2つの場所 -->
-    <h1 class="display-box" id="display1">ここにタイトルが表示されます</h1>
-    <p class="display-box" id="display2">ここに文字が表示されます</p>
-</copy>
+        <!-- 入力された文字を表示する2つの場所 -->
+        <h1 class="display-box" id="display1">ここにタイトルが表示されます</h1>
+        <p class="display-box" id="display2">ここに文字が表示されます</p>
+    </div>
 
     <button onclick="changeFont('akaina')">Microsoft フォントに切り替え</button>
     <button onclick="changeFont('GenbaGothic')">GenbaGothic フォントに切り替え</button>
@@ -81,6 +83,7 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
         inputField2.addEventListener('input', function() {
             display2.textContent = inputField2.value;
         });
+
         let currentFont = 'GenbaGothic'; // デフォルトフォント
 
         function changeFont(fontName) {
@@ -97,8 +100,8 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // 入力されたテキストを取得
-            const title = document.getElementById('inputText1').value;
-            const text = document.getElementById('inputText2').value;
+            const title = inputField1.value.split('\n').join(' '); // 改行をスペースに置き換え
+            const text = inputField2.value.split('\n').join(' '); // 改行をスペースに置き換え
 
             // フォントの設定
             ctx.font = '20px ' + currentFont; // 現在のフォントを使用
