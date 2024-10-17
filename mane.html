@@ -55,17 +55,18 @@
     <canvas id="canvas" width="800" height="400"></canvas>
     <script>
         let currentFont = 'GenbaGothic'; // デフォルトフォント
+        let whiteBackground = false; // 背景色を白にするかどうかのフラグ
 
         function changeFont(fontName) {
             currentFont = fontName; // フォント名を更新
             document.getElementById('inputText1').style.fontFamily = fontName;
             document.getElementById('inputText2').style.fontFamily = fontName;
 
-            // 背景色を白に変更
+            // 背景色を白にするフラグを設定
             if (fontName === 'no') {
-                document.body.style.backgroundColor = 'white'; // 背景を白に
+                whiteBackground = true; // 背景を白にするフラグを立てる
             } else {
-                document.body.style.backgroundColor = ''; // 背景を元に戻す
+                whiteBackground = false; // 背景を透明に戻す
             }
         }
 
@@ -124,6 +125,12 @@
 
             // フォントサイズを調整
             adjustFontSize([...titleLines, ...textLines]);
+
+            // 背景を白に設定（白背景フラグが立っている場合）
+            if (whiteBackground) {
+                ctx.fillStyle = 'white'; // 背景色
+                ctx.fillRect(0, 0, canvas.width, canvas.height); // 背景を塗りつぶす
+            }
 
             // タイトルを描画
             titleLines.forEach(line => {
