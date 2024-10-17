@@ -15,12 +15,20 @@
     font-family: "akaina";
     src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/PixelMplus12-Regular.ttf") format("truetype");
 }
+@font-face {
+    font-family: "akaina";
+    src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/PixelMplus12-Regular.ttf") format("truetype");
+}
 
         * {
             font-family: 'akaina', sans-serif; /* 指定したフォントを適用 */
         }
+         .font-box {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #000;
+        }
     </style>
-</head>
 </head>
 <body>
     <h1>2つのテキストボックスの入力を表示する例</h1>
@@ -32,7 +40,13 @@
     <!-- 入力された文字を表示する2つの場所 -->
     <h1 class="display-box" id="display1">ここにタイトルが表示されます</h1>
     <p class="display-box" id="display2">ここに文字が表示されます</p>
+    
+    <div class="font-box" id="textArea">
+        ここにテキストが表示されます。このテキストのフォントを切り替えます。
+    </div>
 
+    <button onclick="changeFont('akaina')">akaina フォントに切り替え</button>
+    <button onclick="changeFont('serif')">Serif フォントに切り替え</button>
     <script>
         // 1つ目のテキストボックスと表示場所
         const inputField1 = document.getElementById('inputText1');
@@ -51,6 +65,9 @@
         inputField2.addEventListener('input', function() {
             display2.textContent = inputField2.value;
         });
+      function changeFont(fontName) {
+            document.getElementById('textArea').style.fontFamily = fontName;
+        }
     </script>
 </body>
 </html>
