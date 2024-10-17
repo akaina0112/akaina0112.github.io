@@ -13,10 +13,6 @@
             font-family: GenbaGothic;
             src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2') format("woff2");
         }
-        .display-box {
-            margin: 20px 0; /* 上下にマージンを追加 */
-        }
-
         * {
             font-family: 'akaina', sans-serif; /* 指定したフォントを適用 */
             text-align: center; /* 中央揃え */
@@ -29,20 +25,16 @@
             text-align: center; /* 中央揃え */
         }
 
-        .font-box {
-            margin: 20px;
-            padding: 20px;
-            border: 1px solid #000;
-        }
-        canvas {
-            border: 1px solid #000; /* キャンバスの境界線 */
-            margin-top: 20px;
-        }
         textarea {
             width: 80%; /* 幅を調整 */
             height: 50px; /* 高さを調整 */
             margin: 10px 0; /* 上下のマージンを追加 */
             font-family: 'akaina'; /* デフォルトフォント */
+        }
+
+        canvas {
+            border: 1px solid #000; /* キャンバスの境界線 */
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -78,8 +70,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // 入力されたテキストを取得
-            const title = document.getElementById('inputText1').value.split('\n').join(' '); // 改行をスペースに置き換え
-            const text = document.getElementById('inputText2').value.split('\n').join(' '); // 改行をスペースに置き換え
+            const titleLines = document.getElementById('inputText1').value.split('\n'); // タイトルの行を分割
+            const textLines = document.getElementById('inputText2').value.split('\n'); // テキストの行を分割
 
             // フォントの設定
             let fontSize = Math.min(canvas.width / 10, 30); // フォントサイズをキャンバス幅に基づいて設定（最大30px）
@@ -87,11 +79,24 @@
             ctx.textAlign = 'center';
             ctx.fillStyle = 'black'; // 文字色
 
+            // 各行をキャンバスに描画
+            const lineHeight = fontSize * 1.2; // 行間
+            let yOffset = canvas.height / 4; // 初期のY座標
+
             // タイトルを描画
-            ctx.fillText(title || "ここにタイトルが表示されます", canvas.width / 2, canvas.height / 4);
-            // 文字を描画
-            ctx.fillText(text || "ここに文字が表示されます", canvas.width / 2, (canvas.height / 4) * 2);
-            
+            titleLines.forEach(line => {
+                ctx.fillText(line || "ここにタイトルが表示されます", canvas.width / 2, yOffset);
+                yOffset += lineHeight; // 次の行のY座標を更新
+            });
+
+            yOffset += lineHeight; // タイトルの次の行のY座標を更新
+
+            // テキストを描画
+            textLines.forEach(line => {
+                ctx.fillText(line || "ここに文字が表示されます", canvas.width / 2, yOffset);
+                yOffset += lineHeight; // 次の行のY座標を更新
+            });
+
             // 画像データを生成し、ダウンロードリンクを作成
             const link = document.getElementById('downloadLink');
             link.href = canvas.toDataURL('image/png'); // 画像データURL
