@@ -16,8 +16,8 @@
     src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/PixelMplus12-Regular.ttf") format("truetype");
 }
 @font-face {
-    font-family: "akaina";
-    src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/PixelMplus12-Regular.ttf") format("truetype");
+    font-family: "akaina2";
+    src: url("https://raw.githubusercontent.com/akaina0809/akaina0809.github.io/887df3a0b074140f30a73f6be69d2a57d93da9a8/error/font2.ttf") format("truetype");
 }
 
         * {
@@ -46,7 +46,7 @@
     </div>
 
     <button onclick="changeFont('akaina')">akaina フォントに切り替え</button>
-    <button onclick="changeFont('serif')">Serif フォントに切り替え</button>
+    <button onclick="changeFont('akaina2')">Serif フォントに切り替え</button>
     <script>
         // 1つ目のテキストボックスと表示場所
         const inputField1 = document.getElementById('inputText1');
@@ -66,7 +66,8 @@
             display2.textContent = inputField2.value;
         });
       function changeFont(fontName) {
-            document.getElementById('textArea').style.fontFamily = fontName;
+            document.getElementById('display1').style.fontFamily = fontName;
+           document.getElementById('display2').style.fontFamily = fontName;
         }
     </script>
 </body>
