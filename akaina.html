@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>源抜ゴシックの例</title>
+    <style>
+        @font-face {
+            font-family: "GenbaGothic";
+            src: url("https://path_to_your_font/genba-gothic.woff2") format("woff2"),
+                 url("https://path_to_your_font/genba-gothic.ttf") format("truetype");
+        }
+
+        body {
+            font-family: 'GenbaGothic', sans-serif; /* デフォルトフォントを源抜ゴシックに設定 */
+            font-size: 20px; /* フォントサイズ */
+        }
+
+        .font-box {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #000;
+            background-color: #f9f9f9; /* ボックスの背景色 */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>源抜ゴシックの使用例</h1>
+
+    <div class="font-box">
+        ここに源抜ゴシックで表示されるテキストがあります。
+    </div>
+
+</body>
+</html>
