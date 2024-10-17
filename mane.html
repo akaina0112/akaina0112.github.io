@@ -63,11 +63,6 @@
             document.getElementById('inputText2').style.fontFamily = fontName;
 
             // 背景色を白にするフラグを設定
-            if (fontName === 'no') {
-                whiteBackground = true; // 背景を白にするフラグを立てる
-            } else {
-                whiteBackground = false; // 背景を透明に戻す
-            }
         }
 
         function generateImage() {
@@ -128,8 +123,9 @@
 
             // 背景を白に設定（白背景フラグが立っている場合）
             if (whiteBackground) {
-                ctx.fillStyle = 'white'; // 背景色
+               // ctx.fillStyle = 'white'; // 背景色
                 ctx.fillRect(0, 0, canvas.width, canvas.height); // 背景を塗りつぶす
+            　  ctx.fillStyle = 'black'; // 文字色を黒に設定
             }
 
             // タイトルを描画
