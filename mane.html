@@ -48,6 +48,7 @@
     <button onclick="changeFont('akaina')">Microsoft フォントに切り替え</button>
     <button onclick="changeFont('GenbaGothic')">GenbaGothic フォントに切り替え</button>
     <button onclick="changeFont('no')">no フォントに切り替え</button>
+    
     <button onclick="generateImage()">画像を生成</button>
     <a id="downloadLink" style="display:none;">画像をダウンロード</a>
 
@@ -59,6 +60,13 @@
             currentFont = fontName; // フォント名を更新
             document.getElementById('inputText1').style.fontFamily = fontName;
             document.getElementById('inputText2').style.fontFamily = fontName;
+
+            // 背景色を白に変更
+            if (fontName === 'no') {
+                document.body.style.backgroundColor = 'white'; // 背景を白に
+            } else {
+                document.body.style.backgroundColor = ''; // 背景を元に戻す
+            }
         }
 
         function generateImage() {
