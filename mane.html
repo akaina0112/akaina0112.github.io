@@ -51,7 +51,7 @@
     <button onclick="generateImage()">画像を生成</button>
     <a id="downloadLink" style="display:none;">画像をダウンロード</a>
 
-    <canvas id="canvas" width="1500" height="1500"></canvas>
+    <canvas id="canvas" width="800" height="400"></canvas>
     <script>
         let currentFont = 'GenbaGothic'; // デフォルトフォント
 
@@ -76,9 +76,8 @@
             ctx.textAlign = 'center';
             ctx.fillStyle = 'black'; // 文字色
 
-            // 最大フォントサイズを設定
-            const maxFontSize = Math.min(canvas.width / 10, canvas.height / (titleLines.length + textLines.length + 1)); // 最大フォントサイズを計算
-            let fontSize = Math.min(maxFontSize, 40); // 最大40pxまで
+            // フォントサイズの調整
+            let fontSize = 40; // 初期フォントサイズ
             ctx.font = `${fontSize}px ${currentFont}`;
 
             // 行間の設定
@@ -86,6 +85,37 @@
 
             // Y座標の初期化
             let yOffset = canvas.height / 4; // 初期のY座標
+
+            // テキストがキャンバス幅に収まるか確認し、フォントサイズを調整
+            function adjustFontSize(lines) {
+                let maxWidth = 0;
+
+                // 最大幅を取得
+                lines.forEach(line => {
+                    const metrics = ctx.measureText(line);
+                    if (metrics.width > maxWidth) {
+                        maxWidth = metrics.width;
+                    }
+                });
+
+                // フォントサイズを調整
+                while (maxWidth > canvas.width - 40) { // 左右に余白を持たせる
+                    fontSize -= 1; // フォントサイズを1pxずつ減少
+                    ctx.font = `${fontSize}px ${currentFont}`; // フォントを更新
+                    maxWidth = 0; // 再計算のためリセット
+
+                    // 再度最大幅を取得
+                    lines.forEach(line => {
+                        const metrics = ctx.measureText(line);
+                        if (metrics.width > maxWidth) {
+                            maxWidth = metrics.width;
+                        }
+                    });
+                }
+            }
+
+            // フォントサイズを調整
+            adjustFontSize([...titleLines, ...textLines]);
 
             // タイトルを描画
             titleLines.forEach(line => {
