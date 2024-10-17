@@ -81,13 +81,14 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
         inputField2.addEventListener('input', function() {
             display2.textContent = inputField2.value;
         });
-      function changeFont(fontName) {
-            document.getElementById('display1').style.fontFamily = fontName;
-           document.getElementById('display2').style.fontFamily = fontName;
+        let currentFont = 'GenbaGothic'; // デフォルトフォント
+
+        function changeFont(fontName) {
+            currentFont = fontName; // フォント名を更新
+            document.getElementById('inputText1').style.fontFamily = fontName;
+            document.getElementById('inputText2').style.fontFamily = fontName;
         }
-        
-    </script>
-       <script>
+
         function generateImage() {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
@@ -100,9 +101,9 @@ src: url('https://cdn.leafscape.be/GenGthic/genei-p-heavy_ver8_web.woff2')
             const text = document.getElementById('inputText2').value;
 
             // フォントの設定
-            ctx.font = '20px Arial';
+            ctx.font = '20px ' + currentFont; // 現在のフォントを使用
             ctx.textAlign = 'center';
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'black'; // 文字色
 
             // タイトルを描画
             ctx.fillText(title || "ここにタイトルが表示されます", canvas.width / 2, 50);
