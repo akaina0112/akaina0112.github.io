@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2つのテキストボックスの入力を表示</title>
+    <style>
+        .display-box {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #000;
+            width: 300px;
+        }
+    </style>
+    <style>
+        @font-face {
+            font-family: 'MyCustomFont'; /* フォント名を指定 */
+            src: url('akaina/minecraft_font.ttf') format('truetype'); /* TTFフォントを指定 */
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            font-family: 'MyCustomFont', sans-serif; /* 指定したフォントを適用 */
+        }
+    </style>
+</head>
+</head>
+<body>
+    <h1>2つのテキストボックスの入力を表示する例</h1>
+
+    <!-- ユーザーが文字を入力する2つのテキストボックス -->
+    <input type="text" id="inputText1" placeholder="タイトル">
+    <input type="text" id="inputText2" placeholder="文字入力">
+
+    <!-- 入力された文字を表示する2つの場所 -->
+    <h1 class="display-box" id="display1">ここにタイトルが表示されます</h1>
+    <p class="display-box" id="display2">ここに文字が表示されます</p>
+
+    <script>
+        // 1つ目のテキストボックスと表示場所
+        const inputField1 = document.getElementById('inputText1');
+        const display1 = document.getElementById('display1');
+
+        // 2つ目のテキストボックスと表示場所
+        const inputField2 = document.getElementById('inputText2');
+        const display2 = document.getElementById('display2');
+
+        // 1つ目のテキストボックスに入力された文字を表示
+        inputField1.addEventListener('input', function() {
+            display1.textContent = inputField1.value;
+        });
+
+        // 2つ目のテキストボックスに入力された文字を表示
+        inputField2.addEventListener('input', function() {
+            display2.textContent = inputField2.value;
+        });
+    </script>
+</body>
+</html>
