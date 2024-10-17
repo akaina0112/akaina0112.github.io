@@ -98,7 +98,7 @@
             // テキストがキャンバス幅に収まるか確認し、フォントサイズを調整
             function adjustFontSize(lines) {
                 let maxWidth = 0;
-
+　　　　　　　　　 ctx.fillStyle = 'black'; // 文字色を黒に設定
                 // 最大幅を取得
                 lines.forEach(line => {
                     const metrics = ctx.measureText(line);
