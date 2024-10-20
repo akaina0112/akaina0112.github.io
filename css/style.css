@@ -57,6 +57,7 @@ header #logo {
 /*ヘッダー右側の電話番号ブロック
 ---------------------------------------------------------------------------*/
 /*ブロック全体*/
+
 #contact {
 	float: right;		/*右に回り込み*/
 	text-align: center;	/*文字をセンタリング*/
@@ -498,9 +499,6 @@ input:focus,textarea:focus {
 	border: 1px solid #fff;	/*枠線の幅、線種、色*/
 }
 
-/*「人気」「NEW」マーク
----------------------------------------------------------------------------*/
-/*mark1,matk2共通設定*/
 .mark1, .mark2 {
 	display: inline-block;position: absolute;
 	left: 5px;			/*ボックス内の左から5pxの場所に配置*/
@@ -530,6 +528,28 @@ input:focus,textarea:focus {
 body .nav-fix-pos-pagetop a {display: none;}
 /*ボタンの設定*/
 body.is-fixed-pagetop .nav-fix-pos-pagetop a {
+	display: block;text-decoration: none;text-align: center;z-index: 100;position: fixed;
+	width: 50px;		/*幅*/
+	line-height: 50px;	/*高さ*/
+	bottom: 50px;		/*下から50pxの場所に配置*/
+	right: 3%;			/*右から3%の場所に配置*/
+	color: #fff;		/*文字色*/
+	background: #000;	/*背景色（古いブラウザ用）*/
+	background: rgba(0,0,0,0.6);	/*背景色。0,0,0は黒の事で0.6は透明度60%の事。*/
+	border: 1px solid #fff;	/*枠線の幅、線種、色*/
+	animation-name: scroll;	/*上のアニメーションで指定しているkeyframesの名前（scroll）*/
+	animation-duration: 1S;	/*アニメーションの実行時間*/
+	animation-fill-mode: forwards;	/*アニメーションの完了後、最後のキーフレームを維持する*/
+}
+/*マウスオン時*/
+body #is-fixed-pagetop #nav-fix-pos-pagetop a:hover {
+	background: #999;	/*背景色*/
+}
+
+/*デフォルトでは非表示に*/
+body #nav-fix-pos-pagetop a {display: none;}
+/*ボタンの設定*/
+body #is-fixed-pagetop #nav-fix-pos-pagetop a {
 	display: block;text-decoration: none;text-align: center;z-index: 100;position: fixed;
 	width: 50px;		/*幅*/
 	line-height: 50px;	/*高さ*/
