@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>現在地追従マップ</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       height: 100%;
     }
@@ -19,7 +23,7 @@
       top: 10px;
       right: 10px;
       z-index: 1000;
-      background: #4CAF50;
+      background: #4caf50;
       color: white;
       border: none;
       padding: 10px 15px;
@@ -29,12 +33,28 @@
     #followToggleBtn:hover {
       background: #45a049;
     }
+    #addZoneBtn {
+      position: fixed;
+      top: 50px;
+      right: 10px;
+      z-index: 1000;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #addZoneBtn:hover {
+      background: #c0392b;
+    }
   </style>
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
   <div id="map"></div>
   <button id="followToggleBtn" onclick="toggleFollow()">追従: ON</button>
+  <button id="addZoneBtn" onclick="enableDangerZoneAddMode()">危険区域追加</button>
 
   <script>
     let map;
@@ -43,30 +63,60 @@
     let followUser = true;
     let watchId = null;
 
-    const dangerZones = [
-      { lat: 35.6812, lng: 139.7671, radius: 150 },
-      { lat: 35.6895, lng: 139.6917, radius: 200 }
-    ];
+    // 初期危険区域は空（追加して使う）
+    const dangerZones = [];
+
+    // 危険区域用レイヤーグループ
+    let dangerZoneLayerGroup;
+
+    // 通知許可を取得していなければ要求
+    let notificationPermission = false;
+    async function requestNotificationPermission() {
+      if ("Notification" in window) {
+        try {
+          const result = await Notification.requestPermission();
+          notificationPermission = result === "granted";
+        } catch (e) {
+          console.error("通知許可リクエスト失敗:", e);
+        }
+      }
+    }
+
+    // 通知表示関数
+    function sendNotification(title, body) {
+      if (notificationPermission) {
+        new Notification(title, {
+          body: body,
+          icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        });
+      } else {
+        alert(`⚠️ ${title}\n${body}`);
+      }
+    }
 
     function initMap() {
-      map = L.map('map').setView([35.6812, 139.7671], 13);
+      map = L.map("map").setView([35.6812, 139.7671], 13);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        attribution:
+          'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
       }).addTo(map);
 
+      dangerZoneLayerGroup = L.layerGroup().addTo(map);
       renderDangerZones();
     }
 
     function renderDangerZones() {
-      dangerZones.forEach(zone => {
+      dangerZoneLayerGroup.clearLayers();
+
+      dangerZones.forEach((zone) => {
         L.circle([zone.lat, zone.lng], {
           radius: zone.radius,
-          color: 'red',
-          fillColor: '#f03',
-          fillOpacity: 0.3
-        }).addTo(map);
+          color: "red",
+          fillColor: "#f03",
+          fillOpacity: 0.3,
+        }).addTo(dangerZoneLayerGroup);
       });
     }
 
@@ -78,8 +128,8 @@
           icon: L.icon({
             iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             iconSize: [32, 32],
-            iconAnchor: [16, 32]
-          })
+            iconAnchor: [16, 32],
+          }),
         }).addTo(map);
 
         userCircle = L.circle(position, {
@@ -87,7 +137,7 @@
           color: "#3366ff",
           fillColor: "#3366ff",
           fillOpacity: 0.15,
-          weight: 1
+          weight: 1,
         }).addTo(map);
 
         if (followUser) {
@@ -108,22 +158,58 @@
 
     function checkDangerZone(lat, lon) {
       const R = 6371000;
-      const toRad = d => d * Math.PI / 180;
-      dangerZones.forEach(zone => {
+      const toRad = (d) => d * Math.PI / 180;
+      dangerZones.forEach((zone) => {
         const dLat = toRad(zone.lat - lat);
         const dLon = toRad(zone.lng - lon);
-        const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat)) * Math.cos(toRad(zone.lat)) * Math.sin(dLon/2)**2;
+        const a =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(lat)) *
+            Math.cos(toRad(zone.lat)) *
+            Math.sin(dLon / 2) ** 2;
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = R * c;
         if (distance <= zone.radius) {
-          console.warn("危険区域に接近中:", distance.toFixed(2), "m");
+          console.warn(
+            "危険区域に接近中:",
+            distance.toFixed(2),
+            "m"
+          );
+          sendNotification(
+            "危険区域に入りました",
+            `現在位置が半径${zone.radius}mの危険区域内にあります。`
+          );
         }
       });
     }
 
     function toggleFollow() {
       followUser = !followUser;
-      document.getElementById('followToggleBtn').textContent = `追従: ${followUser ? 'ON' : 'OFF'}`;
+      document.getElementById("followToggleBtn").textContent = `追従: ${
+        followUser ? "ON" : "OFF"
+      }`;
+    }
+
+    function enableDangerZoneAddMode() {
+      alert("地図をクリックして危険区域の中心を指定してください。");
+
+      map.once("click", (e) => {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        const radiusStr = prompt(
+          "危険区域の半径をメートル単位で入力してください",
+          "100"
+        );
+        const radius = parseInt(radiusStr);
+
+        if (!isNaN(radius) && radius > 0) {
+          dangerZones.push({ lat, lng, radius });
+          renderDangerZones();
+          alert("危険区域を追加しました。");
+        } else {
+          alert("無効な半径の値です。追加をキャンセルしました。");
+        }
+      });
     }
 
     function startLocationWatch() {
@@ -133,29 +219,30 @@
       }
 
       watchId = navigator.geolocation.watchPosition(
-        position => {
+        (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
           const acc = position.coords.accuracy || 30;
 
           updateUserLocation(lat, lon, acc);
         },
-        error => {
+        (error) => {
           console.error("位置情報エラー:", error);
           alert("位置情報の取得に失敗しました。");
         },
         {
           enableHighAccuracy: true,
           timeout: 5000,
-          maximumAge: 0
+          maximumAge: 0,
         }
       );
     }
 
     window.onload = () => {
+      requestNotificationPermission();
       initMap();
       startLocationWatch();
-    }
+    };
   </script>
 </body>
 </html>
