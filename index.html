@@ -9,8 +9,7 @@
     href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
   />
   <style>
-    html,
-    body {
+    html, body {
       margin: 0;
       height: 100%;
     }
@@ -18,34 +17,35 @@
       width: 100%;
       height: 100vh;
     }
-    #followToggleBtn {
+    button {
       position: fixed;
-      top: 10px;
       right: 10px;
       z-index: 1000;
-      background: #4caf50;
-      color: white;
       border: none;
       padding: 10px 15px;
       border-radius: 5px;
       cursor: pointer;
+      color: white;
+    }
+    #followToggleBtn {
+      top: 10px;
+      background: #4caf50;
     }
     #followToggleBtn:hover {
       background: #45a049;
     }
     #addZoneBtn {
-      position: fixed;
-      top: 50px;
-      right: 10px;
-      z-index: 1000;
-      background: #e74c3c;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
+      top: 60px;
+      background: #e67e22;
     }
     #addZoneBtn:hover {
+      background: #d35400;
+    }
+    #removeZoneBtn {
+      top: 110px;
+      background: #e74c3c;
+    }
+    #removeZoneBtn:hover {
       background: #c0392b;
     }
   </style>
@@ -55,6 +55,8 @@
   <div id="map"></div>
   <button id="followToggleBtn" onclick="toggleFollow()">追従: ON</button>
   <button id="addZoneBtn" onclick="enableDangerZoneAddMode()">危険区域追加</button>
+  <button id="removeZoneBtn" onclick="removeDangerZone()">危険区域削除</button>
+  <audio id="alertSound" src="https://freesound.org/data/previews/341/341695_5260877-lq.mp3" preload="auto"></audio>
 
   <script>
     let map;
@@ -62,15 +64,11 @@
     let userCircle = null;
     let followUser = true;
     let watchId = null;
-
-    // 初期危険区域は空（追加して使う）
-    const dangerZones = [];
-
-    // 危険区域用レイヤーグループ
     let dangerZoneLayerGroup;
 
-    // 通知許可を取得していなければ要求
+    const dangerZones = [];
     let notificationPermission = false;
+
     async function requestNotificationPermission() {
       if ("Notification" in window) {
         try {
@@ -82,8 +80,13 @@
       }
     }
 
-    // 通知表示関数
     function sendNotification(title, body) {
+      const audio = document.getElementById("alertSound");
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.warn("音声再生失敗:", e));
+      }
+
       if (notificationPermission) {
         new Notification(title, {
           body: body,
@@ -99,8 +102,7 @@
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution:
-          'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+        attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
       }).addTo(map);
 
       dangerZoneLayerGroup = L.layerGroup().addTo(map);
@@ -109,14 +111,14 @@
 
     function renderDangerZones() {
       dangerZoneLayerGroup.clearLayers();
-
-      dangerZones.forEach((zone) => {
-        L.circle([zone.lat, zone.lng], {
+      dangerZones.forEach((zone, index) => {
+        const circle = L.circle([zone.lat, zone.lng], {
           radius: zone.radius,
           color: "red",
           fillColor: "#f03",
           fillOpacity: 0.3,
         }).addTo(dangerZoneLayerGroup);
+        zone.circle = circle; // 削除時に使う
       });
     }
 
@@ -147,7 +149,6 @@
         userMarker.setLatLng(position);
         userCircle.setLatLng(position);
         userCircle.setRadius(accuracy);
-
         if (followUser) {
           map.panTo(position);
         }
@@ -165,16 +166,11 @@
         const a =
           Math.sin(dLat / 2) ** 2 +
           Math.cos(toRad(lat)) *
-            Math.cos(toRad(zone.lat)) *
-            Math.sin(dLon / 2) ** 2;
+          Math.cos(toRad(zone.lat)) *
+          Math.sin(dLon / 2) ** 2;
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = R * c;
         if (distance <= zone.radius) {
-          console.warn(
-            "危険区域に接近中:",
-            distance.toFixed(2),
-            "m"
-          );
           sendNotification(
             "危険区域に入りました",
             `現在位置が半径${zone.radius}mの危険区域内にあります。`
@@ -185,23 +181,16 @@
 
     function toggleFollow() {
       followUser = !followUser;
-      document.getElementById("followToggleBtn").textContent = `追従: ${
-        followUser ? "ON" : "OFF"
-      }`;
+      document.getElementById("followToggleBtn").textContent = `追従: ${followUser ? "ON" : "OFF"}`;
     }
 
     function enableDangerZoneAddMode() {
       alert("地図をクリックして危険区域の中心を指定してください。");
-
       map.once("click", (e) => {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
-        const radiusStr = prompt(
-          "危険区域の半径をメートル単位で入力してください",
-          "100"
-        );
+        const radiusStr = prompt("危険区域の半径をメートル単位で入力してください", "100");
         const radius = parseInt(radiusStr);
-
         if (!isNaN(radius) && radius > 0) {
           dangerZones.push({ lat, lng, radius });
           renderDangerZones();
@@ -210,6 +199,28 @@
           alert("無効な半径の値です。追加をキャンセルしました。");
         }
       });
+    }
+
+    function removeDangerZone() {
+      if (dangerZones.length === 0) {
+        alert("削除できる危険区域がありません。");
+        return;
+      }
+
+      const list = dangerZones
+        .map((z, i) => `${i + 1}: 中心(${z.lat.toFixed(4)}, ${z.lng.toFixed(4)}), 半径${z.radius}m`)
+        .join("\n");
+
+      const indexStr = prompt(`削除する危険区域の番号を選んでください:\n${list}`);
+      const index = parseInt(indexStr) - 1;
+
+      if (!isNaN(index) && index >= 0 && index < dangerZones.length) {
+        dangerZones.splice(index, 1);
+        renderDangerZones();
+        alert("危険区域を削除しました。");
+      } else {
+        alert("無効な番号です。削除をキャンセルしました。");
+      }
     }
 
     function startLocationWatch() {
@@ -223,7 +234,6 @@
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
           const acc = position.coords.accuracy || 30;
-
           updateUserLocation(lat, lon, acc);
         },
         (error) => {
