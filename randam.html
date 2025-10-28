@@ -133,15 +133,13 @@ function startRoulette(){
   const isPunishment = currentMatchResults[name]>1; // 2回目以降
 
   let pickCount = Math.random()<0.5?1:2;
-  let finalPicked;
-  let punishmentText = "";
+  let finalPicked = pickUniqueRandom(weapons, pickCount);
 
   if(isPunishment){
-    punishmentText = prompt("罰ゲームは？", "罰ゲーム内容");
-    finalPicked = pickUniqueRandom(weapons, pickCount);
-    if(punishmentText) finalPicked[0]=finalPicked[0] + " (罰ゲーム：" + punishmentText + ")";
-  }else{
-    finalPicked = pickUniqueRandom(weapons, pickCount);
+    const punishmentText = prompt("罰ゲームは？", "罰ゲーム内容");
+    if(punishmentText){
+      finalPicked[0] = `${finalPicked[0]} (罰ゲーム：${punishmentText})`;
+    }
   }
 
   let count=0;
@@ -153,15 +151,23 @@ function startRoulette(){
     count++;
     if(count>=steps){
       clearInterval(interval);
+      // 結果表示
       resultDiv.innerHTML = `${name} の縛り結果<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1]||"自由な武器"}`;
-      
+
+      // 保存（1. 2. の武器名で保存）
       const matchKey = `試合${matchCount}_${name}`;
-      results[matchKey]={title:`第${matchCount}試合`, name, shibari:finalPicked};
+      results[matchKey] = {
+        title: `第${matchCount}試合`,
+        name,
+        shibari: [`1. ${finalPicked[0]}`, `2. ${finalPicked[1]||"自由な武器"}`]
+      };
       localStorage.setItem("rouletteResults", JSON.stringify(results));
+
       document.getElementById("nextPlayerBtn").style.display="block";
     }
   },50);
 }
+
 
 // ボタン
 document.getElementById("shuffleBtn").addEventListener("click", startRoulette);
@@ -218,3 +224,4 @@ window.onload = ()=>{ setupDiv.style.display="flex"; };
 </script>
 </body>
 </html>
+
