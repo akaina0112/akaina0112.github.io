@@ -6,81 +6,72 @@
 <title>荒野行動 縛りルーレット</title>
 <style>
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
+  font-family: "Arial", sans-serif;
   background-color: #f2f2f2;
-  font-family: Arial, sans-serif;
-}
-
-#container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-#rest {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-}
-
-#result {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 6vw;
+  height: 100%;
   text-align: center;
-  min-height: 40%;
-  width: 90%;
-  background-color: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
 }
-
+#setup, #roulette {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+#setup.active, #roulette.active {
+  display: flex;
+}
+input {
+  padding: 10px;
+  margin: 5px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
 button {
   font-size: 18px;
-  padding: 12px 25px;
-  margin: 8px;
+  padding: 10px 20px;
+  margin: 10px;
   cursor: pointer;
   border-radius: 5px;
   border: none;
   background-color: #4CAF50;
   color: white;
-  transition: background 0.2s;
 }
-
 button:hover {
   background-color: #45a049;
 }
-
-input {
-  padding: 10px;
-  font-size: 16px;
-  margin: 5px;
-}
-
-.box {
-  background-color: #fff;
-  padding: 10px;
-  margin: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  text-align: left;
-  width: 90%;
+#result {
+  font-size: 6vw;
+  padding: 20px;
 }
 </style>
 </head>
 <body>
-<div id="container"></div>
+
+<h1>🎯 荒野行動 縛りルーレット</h1>
+
+<!-- 人数・名前入力画面 -->
+<div id="setup" class="active">
+  <div>
+    <p>人数を選択（最大5人）</p>
+    <input type="number" id="playerCount" min="1" max="5" value="1">
+    <button id="setCountBtn">OK</button>
+  </div>
+  <div id="nameInputs"></div>
+  <button id="saveNamesBtn" style="display:none;">次へ ▶</button>
+</div>
+
+<!-- ルーレット画面 -->
+<div id="roulette">
+  <h2 id="currentTitle"></h2>
+  <select id="playerSelect"></select>
+  <div id="result">結果表示はここ</div>
+  <button id="shuffleBtn">縛りルーレット 🎲</button>
+  <button id="resetBtn" style="background-color:red;">リセット</button>
+</div>
 
 <script>
 const weapons = [
@@ -91,156 +82,94 @@ const weapons = [
   "ガトリングガン","MK60","95式軽機関銃"
 ];
 
+const setupDiv = document.getElementById("setup");
+const rouletteDiv = document.getElementById("roulette");
+const nameInputsDiv = document.getElementById("nameInputs");
+const saveNamesBtn = document.getElementById("saveNamesBtn");
+const playerSelect = document.getElementById("playerSelect");
+const resultDiv = document.getElementById("result");
+const titleEl = document.getElementById("currentTitle");
+
 let players = JSON.parse(localStorage.getItem("players")) || [];
-let results = JSON.parse(localStorage.getItem("results")) || [];
-let matchCount = results.length + 1;
+let matchCount = parseInt(localStorage.getItem("matchCount")) || 1;
 
-const container = document.getElementById("container");
-
-function saveData() {
-  localStorage.setItem("players", JSON.stringify(players));
-  localStorage.setItem("results", JSON.stringify(results));
-}
-
-function showPlayerCountInput() {
-  container.innerHTML = `
-    <h1>🎮 荒野行動 縛りルーレット</h1>
-    <p>参加人数を選択してください（最大5人）</p>
-    <input type="number" id="countInput" min="1" max="5" value="1">
-    <button id="nextBtn">次へ</button>
-  `;
-  document.getElementById("nextBtn").onclick = () => {
-    const count = parseInt(document.getElementById("countInput").value);
-    if (count < 1 || count > 5) return alert("1〜5の人数を入力してください。");
-    showNameInput(count);
-  };
-}
-
-function showNameInput(count) {
-  let inputs = "";
-  for (let i = 0; i < count; i++) {
-    inputs += `<input type="text" id="name${i}" placeholder="プレイヤー${i+1}の名前"><br>`;
+// ページ読み込み時
+window.onload = () => {
+  if (players.length > 0) {
+    startRouletteScreen();
+  } else {
+    setupDiv.classList.add("active");
   }
-  container.innerHTML = `
-    <h2>名前を入力してください</h2>
-    ${inputs}
-    <button id="saveNamesBtn">次へ</button>
-  `;
-  document.getElementById("saveNamesBtn").onclick = () => {
-    players = [];
-    for (let i = 0; i < count; i++) {
-      const name = document.getElementById(`name${i}`).value.trim() || `プレイヤー${i+1}`;
-      players.push(name);
-    }
-    saveData();
-    showMatchScreen();
-  };
+};
+
+// 人数設定
+document.getElementById("setCountBtn").addEventListener("click", () => {
+  const count = parseInt(document.getElementById("playerCount").value);
+  nameInputsDiv.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    nameInputsDiv.innerHTML += `<input type="text" id="player${i}" placeholder="プレイヤー${i+1}の名前">`;
+  }
+  saveNamesBtn.style.display = "inline-block";
+});
+
+// 名前保存
+saveNamesBtn.addEventListener("click", () => {
+  players = [];
+  const count = parseInt(document.getElementById("playerCount").value);
+  for (let i = 0; i < count; i++) {
+    const name = document.getElementById(`player${i}`).value.trim();
+    if (name) players.push({ name, result: null });
+  }
+  localStorage.setItem("players", JSON.stringify(players));
+  localStorage.setItem("matchCount", matchCount);
+  startRouletteScreen();
+});
+
+// ルーレット画面に切り替え
+function startRouletteScreen() {
+  setupDiv.classList.remove("active");
+  rouletteDiv.classList.add("active");
+  playerSelect.innerHTML = players.map(p => `<option value="${p.name}">${p.name}</option>`).join("");
+  titleEl.textContent = `${matchCount}試合目`;
 }
 
+// ランダム選択
 function pickUniqueRandom(arr, count) {
-  const n = Math.min(count, arr.length);
   const copy = arr.slice();
   const picked = [];
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < count; i++) {
     const idx = Math.floor(Math.random() * copy.length);
     picked.push(copy.splice(idx, 1)[0]);
   }
   return picked;
 }
 
-function startRoulette(player) {
+// ルーレット実行
+document.getElementById("shuffleBtn").addEventListener("click", () => {
+  const selectedName = playerSelect.value;
+  const player = players.find(p => p.name === selectedName);
   const pickCount = Math.random() < 0.5 ? 1 : 2;
   const finalPicked = pickUniqueRandom(weapons, pickCount);
-  const resultDiv = document.getElementById("result");
-  let count = 0;
-  const steps = 60;
 
-  const interval = setInterval(() => {
-    const random1 = weapons[Math.floor(Math.random() * weapons.length)];
-    const random2 = weapons[Math.floor(Math.random() * weapons.length)];
-    resultDiv.innerHTML = `${player} の縛り中...<br>${random1}<br>${random2}`;
-    count++;
-    if (count >= steps) {
-      clearInterval(interval);
-      resultDiv.innerHTML = `${player} の縛り結果<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1] || "自由な武器"}`;
-
-      // 試合結果の配列を作成
-      if (!results[matchCount - 1]) {
-        results[matchCount - 1] = { title: `第${matchCount}試合`, data: [] };
-      }
-
-      // 同じプレイヤーが2回目以降なら罰ゲーム
-      const matchData = results[matchCount - 1].data;
-      const existing = matchData.find(r => r.name === player);
-      if (existing) {
-        const punishment = prompt(`${player} はこの試合で2回目です！罰ゲームは？`) || "なし";
-        existing.punishment = punishment;
-      } else {
-        matchData.push({ name: player, shibari: finalPicked });
-      }
-
-      saveData();
-    }
-  }, 50);
-}
-
-function showMatchScreen() {
-  container.innerHTML = `
-  <div id="rest">
-    <h2>第${matchCount}試合</h2>
-    <div id="result">ここに結果が出ます</div>
-    <div>${players.map(p => `<button class="playerBtn">${p}</button>`).join("")}</div>
-    <button id="nextMatch">次の試合へ</button>
-    <button id="viewResults">結果を見る</button>
-    <button id="resetBtn">リセット</button>
-  </div>
-  `;
-  document.querySelectorAll(".playerBtn").forEach(btn => {
-    btn.onclick = () => startRoulette(btn.textContent);
-  });
-  document.getElementById("nextMatch").onclick = () => {
-    matchCount++;
-    showMatchScreen();
-  };
-  document.getElementById("viewResults").onclick = showResults;
-  document.getElementById("resetBtn").onclick = resetAll;
-}
-
-function showResults() {
-  container.innerHTML = `
-    <h2>📜 試合ごとの結果</h2>
-    ${results.map(match => `
-      <div class="box">
-        <h3>${match.title}</h3>
-        ${match.data.map(r => `
-          👤${r.name}<br>
-          🔫${r.shibari.join(", ")}<br>
-          ${r.punishment ? `⚠️罰ゲーム：${r.punishment}` : ""}
-          <hr>
-        `).join("")}
-      </div>
-    `).join("") || "まだ結果がありません"}
-    <button id="backBtn">戻る</button>
-  `;
-  document.getElementById("backBtn").onclick = showMatchScreen;
-}
-
-function resetAll() {
-  if (confirm("すべてリセットしますか？")) {
-    localStorage.clear();
-    players = [];
-    results = [];
-    matchCount = 1;
-    showPlayerCountInput();
+  if (player.result) {
+    // 2回目以降：罰ゲーム
+    resultDiv.innerHTML = `⚠️ ${player.name}は2回目！罰ゲーム！<br>新しい縛りに上書きされました💀<br><br>1. ${finalPicked[0]}<br>2. ${finalPicked[1] || "自由"}`;
+  } else {
+    // 初回
+    resultDiv.innerHTML = `${player.name}の縛り：<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1] || "自由"}`;
   }
-}
 
-// 初期画面表示
-if (players.length === 0) {
-  showPlayerCountInput();
-} else {
-  showMatchScreen();
-}
+  // 結果保存
+  player.result = finalPicked;
+  localStorage.setItem("players", JSON.stringify(players));
+});
+
+// リセット
+document.getElementById("resetBtn").addEventListener("click", () => {
+  localStorage.clear();
+  location.reload();
+});
 </script>
+
 </body>
 </html>
