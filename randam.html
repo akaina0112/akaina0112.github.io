@@ -6,15 +6,17 @@
 <title>荒野行動 縛りルーレット</title>
 <style>
 html, body {height:100%; margin:0; font-family:Arial,sans-serif; background:#f2f2f2;}
-#setup, #roulette {display:none; flex-direction:column; justify-content:center; align-items:center; height:100vh;}
+#setup, #roulette, #allResults {display:none; flex-direction:column; justify-content:center; align-items:center; height:100vh;}
 #result {font-size:6vw; text-align:center; padding:20px; background:#fff; border-radius:10px; margin-bottom:20px; box-shadow:0 4px 8px rgba(0,0,0,0.15);}
 button {font-size:18px; padding:12px 25px; margin:10px; cursor:pointer; border:none; border-radius:6px; background:#4CAF50; color:white;}
 button:hover {background:#45a049;}
 input {font-size:18px; margin:5px; padding:8px;}
 #currentPlayer {font-size:2em; color:#222; margin:10px 0 5px 0; text-align:center;}
 #matchInfo {font-size:1.5em; color:#555; margin-bottom:15px; text-align:center;}
-.resultBox {background:#fff; border-radius:8px; padding:10px; margin:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.resultBox {background:#fff; border-radius:8px; padding:10px; margin:5px; width:80%; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 .resultBox h3 {margin:0 0 5px 0;}
+#backBtn {background:#f44336;}
+#backBtn:hover {background:#d32f2f;}
 </style>
 </head>
 <body>
@@ -37,7 +39,12 @@ input {font-size:18px; margin:5px; padding:8px;}
   <button id="nextMatchBtn" style="display:none;">次の試合へ 🏁</button>
   <button id="viewResultBtn">結果一覧を見る 📋</button>
   <button id="resetBtn">リセット 🔁</button>
-  <div id="resultBoxes"></div>
+</div>
+
+<div id="allResults">
+  <h1>📋 全試合結果</h1>
+  <div id="resultsContainer" style="width:90%; max-height:80vh; overflow-y:auto;"></div>
+  <button id="backBtn">× 戻る</button>
 </div>
 
 <script>
@@ -53,14 +60,15 @@ let players = [];
 let currentIndex = 0;
 let matchCount = parseInt(localStorage.getItem("matchCount") || "1");
 let results = JSON.parse(localStorage.getItem("rouletteResults") || "{}");
-let currentMatchResults = {};
+let currentMatchResults = {}; // 今の試合での回数管理
 
 const setupDiv = document.getElementById("setup");
 const rouletteDiv = document.getElementById("roulette");
+const allResultsDiv = document.getElementById("allResults");
 const resultDiv = document.getElementById("result");
 const currentPlayerEl = document.getElementById("currentPlayer");
 const matchInfoEl = document.getElementById("matchInfo");
-const resultBoxes = document.getElementById("resultBoxes");
+const resultsContainer = document.getElementById("resultsContainer");
 
 // 人数入力
 document.getElementById("setPlayers").addEventListener("click", ()=>{
@@ -155,7 +163,7 @@ function startRoulette(){
   },50);
 }
 
-// ボタン操作
+// ボタン
 document.getElementById("shuffleBtn").addEventListener("click", startRoulette);
 document.getElementById("nextPlayerBtn").addEventListener("click", ()=>{
   currentIndex++;
@@ -169,7 +177,10 @@ document.getElementById("nextMatchBtn").addEventListener("click", ()=>{
   showPlayer();
 });
 document.getElementById("viewResultBtn").addEventListener("click", ()=>{
-  resultBoxes.innerHTML="";
+  // 全試合表示
+  rouletteDiv.style.display="none";
+  allResultsDiv.style.display="flex";
+  resultsContainer.innerHTML="";
   const grouped = {};
   Object.values(results).forEach(r=>{
     if(!grouped[r.title]) grouped[r.title]=[];
@@ -183,9 +194,15 @@ document.getElementById("viewResultBtn").addEventListener("click", ()=>{
       html += `👤 ${r.name} 🔫 ${r.shibari.join(", ")}<br>`;
     });
     box.innerHTML=html;
-    resultBoxes.appendChild(box);
+    resultsContainer.appendChild(box);
   }
 });
+
+document.getElementById("backBtn").addEventListener("click", ()=>{
+  allResultsDiv.style.display="none";
+  rouletteDiv.style.display="flex";
+});
+
 document.getElementById("resetBtn").addEventListener("click", ()=>{
   if(confirm("リセットしますか？保存データが全て消えます。")){
     localStorage.removeItem("rouletteResults");
