@@ -6,12 +6,37 @@
 <title>荒野行動 縛りルーレット</title>
 <style>
 html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: #f2f2f2;
-  font-family: Arial, sans-serif;
-  text-align: center;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+    font-family: Arial, sans-serif;
+}
+
+#rest {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 縦中央 */
+    align-items: center;     /* 横中央 */
+    height: 100vh;
+    width: 100vw;
+    background-color: #ffffff;
+}
+
+#result {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 8vw; /* 画面サイズに応じて文字大きく */
+    text-align: center;
+    min-height: 50%;
+    width: 100%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
 #container {
@@ -142,11 +167,13 @@ function startRoulette(player) {
 
 function showMatchScreen() {
   container.innerHTML = `
+  <div id="rest">
     <h2>第${matchCount}試合</h2>
     <div id="result">ここに結果が出ます</div>
     <div>${players.map(p => `<button class="playerBtn">${p}</button>`).join("")}</div>
     <button id="viewResults">結果を見る</button>
     <button id="resetBtn">リセット</button>
+    </div>
   `;
 
   document.querySelectorAll(".playerBtn").forEach(btn => {
@@ -185,3 +212,4 @@ if (players.length === 0) {
 </script>
 </body>
 </html>
+
