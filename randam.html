@@ -200,22 +200,30 @@ document.getElementById("viewResultBtn").addEventListener("click", ()=>{
   rouletteDiv.style.display="none";
   allResultsDiv.style.display="flex";
   resultsContainer.innerHTML="";
+
+  const bgColors = ["#fff", "#f9f0f0", "#f0f9f9", "#f0f0f9", "#f9f9f0"]; // 好きな色
   const grouped = {};
   Object.values(results).forEach(r=>{
     if(!grouped[r.title]) grouped[r.title]=[];
     grouped[r.title].push(r);
   });
+
+  let colorIndex = 0;
   for(const match in grouped){
     const box = document.createElement("div");
     box.className="resultBox";
+    box.style.backgroundColor = bgColors[colorIndex % bgColors.length]; // 背景色を順番に
+    colorIndex++;
+
     let html = `<h3>🏆 ${match}</h3>`;
     grouped[match].forEach(r=>{
       html += `👤 ${r.name} 🔫 ${r.shibari.join(", ")}<br>`;
     });
-    box.innerHTML=html;
+    box.innerHTML = html;
     resultsContainer.appendChild(box);
   }
 });
+
 
 document.getElementById("backBtn").addEventListener("click", ()=>{
   allResultsDiv.style.display="none";
@@ -277,6 +285,7 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
 
 
 
