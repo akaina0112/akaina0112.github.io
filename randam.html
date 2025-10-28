@@ -104,12 +104,17 @@ document.getElementById("startBtn").addEventListener("click", ()=>{
   const inputs = document.querySelectorAll("#nameInputs input");
   players = Array.from(inputs).map(i=>i.value.trim()).filter(n=>n!=="");
   if(players.length===0) return alert("名前を入力してください！");
+
+  // ✅ 名前を保存
+  localStorage.setItem("players", JSON.stringify(players));
+
   setupDiv.style.display="none";
   rouletteDiv.style.display="flex";
   currentIndex=0;
   currentMatchResults={};
   showPlayer();
 });
+
 
 // 現在のプレイヤー表示
 function showPlayer(){
@@ -150,10 +155,44 @@ function startRoulette(){
 
   if(isPunishment){
     const punishmentText = prompt("罰ゲームは？", "罰ゲーム内容");
-    if(punishmentText){
+
+    // ✅ キャンセルならルーレット中止
+    if(punishmentText === null){
+      currentMatchResults[name]--; // カウント戻す
+      return; // 関数終了
+    }
+
+    if(punishmentText.trim() !== ""){
       finalPicked[0] = `${finalPicked[0]} (罰ゲーム：${punishmentText})`;
     }
   }
+
+  let count=0;
+  const steps=60;
+  const interval = setInterval(()=>{
+    const random1 = weapons[Math.floor(Math.random()*weapons.length)];
+    const random2 = weapons[Math.floor(Math.random()*weapons.length)];
+    resultDiv.innerHTML = `${name} の縛り中...<br>${random1}<br>${random2}`;
+    count++;
+    if(count>=steps){
+      clearInterval(interval);
+      // 結果表示
+      resultDiv.innerHTML = `${name} の縛り結果<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1]||"自由な武器"}`;
+
+      // 保存（1. 2. の武器名で保存）
+      const matchKey = `試合${matchCount}_${name}`;
+      results[matchKey] = {
+        title: `第${matchCount}試合`,
+        name,
+        shibari: [`1. ${finalPicked[0]}`, `2. ${finalPicked[1]||"自由な武器"}`]
+      };
+      localStorage.setItem("rouletteResults", JSON.stringify(results));
+
+      document.getElementById("nextPlayerBtn").style.display="block";
+    }
+  },50);
+}
+
 
   let count=0;
   const steps=60;
@@ -291,6 +330,7 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
 
 
 
