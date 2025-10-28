@@ -196,34 +196,40 @@ document.getElementById("nextMatchBtn").addEventListener("click", ()=>{
   showPlayer();
 });
 document.getElementById("viewResultBtn").addEventListener("click", ()=>{
-  // 全試合表示
-  rouletteDiv.style.display="none";
-  allResultsDiv.style.display="flex";
-  resultsContainer.innerHTML="";
+  rouletteDiv.style.display = "none";
+  allResultsDiv.style.display = "flex";
+  resultsContainer.innerHTML = "";
 
-  const bgColors = ["#fff", "#f9f0f0", "#f0f9f9", "#f0f0f9", "#f9f9f0"]; // 好きな色
   const grouped = {};
   Object.values(results).forEach(r=>{
-    if(!grouped[r.title]) grouped[r.title]=[];
+    if(!r.name) r.name = "不明"; // 安全対策
+    if(!grouped[r.title]) grouped[r.title] = [];
     grouped[r.title].push(r);
   });
 
+  const totalMatches = Object.keys(grouped).length;
   let colorIndex = 0;
+
   for(const match in grouped){
     const box = document.createElement("div");
-    box.className="resultBox";
-    box.style.backgroundColor = bgColors[colorIndex % bgColors.length]; // 背景色を順番に
+    box.className = "resultBox";
+
+    // 背景色をHSLで生成（パステル調）
+    const hue = (colorIndex / totalMatches) * 360;
+    box.style.backgroundColor = `hsl(${hue}, 50%, 95%)`;
     colorIndex++;
 
     let html = `<h3>🏆 ${match}</h3>`;
     grouped[match].forEach(r=>{
-      html += `👤 ${r.name} 🔫 ${r.shibari.join(", ")}<br>`;
+      const name = r.name || "不明";
+      const shibari1 = r.shibari[0] || "1. 自由な武器";
+      const shibari2 = r.shibari[1] || "2. 自由な武器";
+      html += `👤 ${name} 🔫 ${shibari1}, ${shibari2}<br>`;
     });
     box.innerHTML = html;
     resultsContainer.appendChild(box);
   }
 });
-
 
 document.getElementById("backBtn").addEventListener("click", ()=>{
   allResultsDiv.style.display="none";
@@ -285,6 +291,7 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
 
 
 
