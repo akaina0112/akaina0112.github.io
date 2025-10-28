@@ -14,6 +14,7 @@ input {font-size:18px; margin:5px; padding:8px;}
 #currentPlayer {font-size:2em; color:#222; margin:10px 0 5px 0; text-align:center;}
 #matchInfo {font-size:1.5em; color:#555; margin-bottom:15px; text-align:center;}
 .resultBox {background:#fff; border-radius:8px; padding:10px; margin:5px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.resultBox h3 {margin:0 0 5px 0;}
 </style>
 </head>
 <body>
@@ -125,12 +126,12 @@ function startRoulette(){
 
   let pickCount = Math.random()<0.5?1:2;
   let finalPicked;
+  let punishmentText = "";
+
   if(isPunishment){
-    // 罰ゲームの入力
-    const punishInput = prompt("罰ゲームは？", "武器名");
-    // weaponsからランダムで上書き
+    punishmentText = prompt("罰ゲームは？", "罰ゲーム内容");
     finalPicked = pickUniqueRandom(weapons, pickCount);
-    if(punishInput) finalPicked[0]=punishInput;
+    if(punishmentText) finalPicked[0]=finalPicked[0] + " (罰ゲーム：" + punishmentText + ")";
   }else{
     finalPicked = pickUniqueRandom(weapons, pickCount);
   }
@@ -149,20 +150,20 @@ function startRoulette(){
       const matchKey = `試合${matchCount}_${name}`;
       results[matchKey]={title:`第${matchCount}試合`, name, shibari:finalPicked};
       localStorage.setItem("rouletteResults", JSON.stringify(results));
-      updateResultBoxes(); // box表示
+      updateResultBoxes();
       document.getElementById("nextPlayerBtn").style.display="block";
     }
   },50);
 }
 
-// 結果Box表示
+// 結果Box表示（試合ごと）
 function updateResultBoxes(){
   resultBoxes.innerHTML="";
   const matchResults = Object.values(results).filter(r=>r.title===`第${matchCount}試合`);
   matchResults.forEach(r=>{
     const div=document.createElement("div");
     div.className="resultBox";
-    div.innerHTML=`🏷️ ${r.title}｜👤 ${r.name}<br>🔫 ${r.shibari.join(", ")}`;
+    div.innerHTML=`<h3>🏷️ ${r.title}｜👤 ${r.name}</h3>🔫 ${r.shibari.join(", ")}`;
     resultBoxes.appendChild(div);
   });
 }
@@ -179,9 +180,28 @@ document.getElementById("nextMatchBtn").addEventListener("click", ()=>{
   currentIndex=0;
   currentMatchResults={};
   showPlayer();
+  updateResultBoxes();
 });
 document.getElementById("viewResultBtn").addEventListener("click", ()=>{
-  alert(JSON.stringify(results,null,2));
+  // 全試合表示
+  const allResultsDiv = document.createElement("div");
+  allResultsDiv.innerHTML="";
+  const grouped = {};
+  Object.values(results).forEach(r=>{
+    if(!grouped[r.title]) grouped[r.title]=[];
+    grouped[r.title].push(r);
+  });
+  resultBoxes.innerHTML="";
+  for(const match in grouped){
+    const box = document.createElement("div");
+    box.className="resultBox";
+    let html = `<h3>🏆 ${match}</h3>`;
+    grouped[match].forEach(r=>{
+      html += `👤 ${r.name} 🔫 ${r.shibari.join(", ")}<br>`;
+    });
+    box.innerHTML=html;
+    resultBoxes.appendChild(box);
+  }
 });
 document.getElementById("resetBtn").addEventListener("click", ()=>{
   if(confirm("リセットしますか？保存データが全て消えます。")){
