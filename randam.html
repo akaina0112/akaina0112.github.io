@@ -13,7 +13,7 @@ button:hover {background:#45a049;}
 input {font-size:18px; margin:5px; padding:8px;}
 #currentPlayer {font-size:2em; color:#222; margin:10px 0 5px 0; text-align:center;}
 #matchInfo {font-size:1.5em; color:#555; margin-bottom:15px; text-align:center;}
-.resultBox {background:#fff; border-radius:8px; padding:10px; margin:5px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.resultBox {background:#fff; border-radius:8px; padding:10px; margin:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 .resultBox h3 {margin:0 0 5px 0;}
 </style>
 </head>
@@ -53,7 +53,7 @@ let players = [];
 let currentIndex = 0;
 let matchCount = parseInt(localStorage.getItem("matchCount") || "1");
 let results = JSON.parse(localStorage.getItem("rouletteResults") || "{}");
-let currentMatchResults = {}; // 今の試合での回数管理
+let currentMatchResults = {};
 
 const setupDiv = document.getElementById("setup");
 const rouletteDiv = document.getElementById("roulette");
@@ -150,25 +150,12 @@ function startRoulette(){
       const matchKey = `試合${matchCount}_${name}`;
       results[matchKey]={title:`第${matchCount}試合`, name, shibari:finalPicked};
       localStorage.setItem("rouletteResults", JSON.stringify(results));
-      updateResultBoxes();
       document.getElementById("nextPlayerBtn").style.display="block";
     }
   },50);
 }
 
-// 結果Box表示（試合ごと）
-function updateResultBoxes(){
-  resultBoxes.innerHTML="";
-  const matchResults = Object.values(results).filter(r=>r.title===`第${matchCount}試合`);
-  matchResults.forEach(r=>{
-    const div=document.createElement("div");
-    div.className="resultBox";
-    div.innerHTML=`<h3>🏷️ ${r.title}｜👤 ${r.name}</h3>🔫 ${r.shibari.join(", ")}`;
-    resultBoxes.appendChild(div);
-  });
-}
-
-// ボタン
+// ボタン操作
 document.getElementById("shuffleBtn").addEventListener("click", startRoulette);
 document.getElementById("nextPlayerBtn").addEventListener("click", ()=>{
   currentIndex++;
@@ -180,18 +167,14 @@ document.getElementById("nextMatchBtn").addEventListener("click", ()=>{
   currentIndex=0;
   currentMatchResults={};
   showPlayer();
-  updateResultBoxes();
 });
 document.getElementById("viewResultBtn").addEventListener("click", ()=>{
-  // 全試合表示
-  const allResultsDiv = document.createElement("div");
-  allResultsDiv.innerHTML="";
+  resultBoxes.innerHTML="";
   const grouped = {};
   Object.values(results).forEach(r=>{
     if(!grouped[r.title]) grouped[r.title]=[];
     grouped[r.title].push(r);
   });
-  resultBoxes.innerHTML="";
   for(const match in grouped){
     const box = document.createElement("div");
     box.className="resultBox";
