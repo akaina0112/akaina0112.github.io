@@ -256,14 +256,18 @@ document.getElementById("backBtn").addEventListener("click", ()=>{
   rouletteDiv.style.display="flex";
 });
 
-// 罰ゲーム一覧表示
+// 罰ゲーム一覧表示切替
 document.getElementById("showPunishmentsBtn").addEventListener("click", ()=>{
-  let html = "<h3>🎯 罰ゲーム一覧</h3>";
-  for(const name in punishmentList){
-    html += `👤 ${name}: ${punishmentList[name].join(", ")}<br>`;
+  if(punishmentsContainer.style.display === "block"){
+    punishmentsContainer.style.display = "none"; // 非表示
+  } else {
+    let html = "<h3>🎯 罰ゲーム一覧</h3>";
+    for(const name in punishmentList){
+      html += `👤 ${name}: ${punishmentList[name].join(", ")}<br>`;
+    }
+    punishmentsContainer.innerHTML = html;
+    punishmentsContainer.style.display = "block"; // 表示
   }
-  punishmentsContainer.innerHTML = html;
-  punishmentsContainer.style.display="block";
 });
 
 // リセット
@@ -321,3 +325,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
