@@ -6,37 +6,11 @@
 <title>荒野行動 縛りルーレット</title>
 <style>
 html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background-color: #f2f2f2;
-    font-family: Arial, sans-serif;
-}
-
-#rest {
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* 縦中央 */
-    align-items: center;     /* 横中央 */
-    height: 100vh;
-    width: 100vw;
-    background-color: #ffffff;
-}
-
-#result {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 8vw; /* 画面サイズに応じて文字大きく */
-    text-align: center;
-    min-height: 50%;
-    width: 100%;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f2f2f2;
+  font-family: Arial, sans-serif;
 }
 
 #container {
@@ -47,10 +21,35 @@ html, body {
   height: 100vh;
 }
 
+#rest {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+#result {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 6vw;
+  text-align: center;
+  min-height: 40%;
+  width: 90%;
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
 button {
   font-size: 18px;
   padding: 12px 25px;
-  margin: 10px;
+  margin: 8px;
   cursor: pointer;
   border-radius: 5px;
   border: none;
@@ -67,6 +66,16 @@ input {
   padding: 10px;
   font-size: 16px;
   margin: 5px;
+}
+
+.box {
+  background-color: #fff;
+  padding: 10px;
+  margin: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-align: left;
+  width: 90%;
 }
 </style>
 </head>
@@ -100,13 +109,9 @@ function showPlayerCountInput() {
     <input type="number" id="countInput" min="1" max="5" value="1">
     <button id="nextBtn">次へ</button>
   `;
-
   document.getElementById("nextBtn").onclick = () => {
     const count = parseInt(document.getElementById("countInput").value);
-    if (count < 1 || count > 5) {
-      alert("1〜5の人数を入力してください。");
-      return;
-    }
+    if (count < 1 || count > 5) return alert("1〜5の人数を入力してください。");
     showNameInput(count);
   };
 }
@@ -121,7 +126,6 @@ function showNameInput(count) {
     ${inputs}
     <button id="saveNamesBtn">次へ</button>
   `;
-
   document.getElementById("saveNamesBtn").onclick = () => {
     players = [];
     for (let i = 0; i < count; i++) {
@@ -159,7 +163,22 @@ function startRoulette(player) {
     if (count >= steps) {
       clearInterval(interval);
       resultDiv.innerHTML = `${player} の縛り結果<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1] || "自由な武器"}`;
-      results.push({ title: `第${matchCount}試合`, name: player, shibari: finalPicked });
+
+      // 試合結果の配列を作成
+      if (!results[matchCount - 1]) {
+        results[matchCount - 1] = { title: `第${matchCount}試合`, data: [] };
+      }
+
+      // 同じプレイヤーが2回目以降なら罰ゲーム
+      const matchData = results[matchCount - 1].data;
+      const existing = matchData.find(r => r.name === player);
+      if (existing) {
+        const punishment = prompt(`${player} はこの試合で2回目です！罰ゲームは？`) || "なし";
+        existing.punishment = punishment;
+      } else {
+        matchData.push({ name: player, shibari: finalPicked });
+      }
+
       saveData();
     }
   }, 50);
@@ -171,23 +190,36 @@ function showMatchScreen() {
     <h2>第${matchCount}試合</h2>
     <div id="result">ここに結果が出ます</div>
     <div>${players.map(p => `<button class="playerBtn">${p}</button>`).join("")}</div>
+    <button id="nextMatch">次の試合へ</button>
     <button id="viewResults">結果を見る</button>
     <button id="resetBtn">リセット</button>
-    </div>
+  </div>
   `;
-
   document.querySelectorAll(".playerBtn").forEach(btn => {
     btn.onclick = () => startRoulette(btn.textContent);
   });
-
+  document.getElementById("nextMatch").onclick = () => {
+    matchCount++;
+    showMatchScreen();
+  };
   document.getElementById("viewResults").onclick = showResults;
   document.getElementById("resetBtn").onclick = resetAll;
 }
 
 function showResults() {
   container.innerHTML = `
-    <h2>これまでの結果</h2>
-    ${results.map(r => `<div>🏷️${r.title}｜👤${r.name}<br>🔫${r.shibari.join(", ")}</div><hr>`).join("") || "結果なし"}
+    <h2>📜 試合ごとの結果</h2>
+    ${results.map(match => `
+      <div class="box">
+        <h3>${match.title}</h3>
+        ${match.data.map(r => `
+          👤${r.name}<br>
+          🔫${r.shibari.join(", ")}<br>
+          ${r.punishment ? `⚠️罰ゲーム：${r.punishment}` : ""}
+          <hr>
+        `).join("")}
+      </div>
+    `).join("") || "まだ結果がありません"}
     <button id="backBtn">戻る</button>
   `;
   document.getElementById("backBtn").onclick = showMatchScreen;
@@ -203,7 +235,7 @@ function resetAll() {
   }
 }
 
-// ページ読み込み時の処理
+// 初期画面表示
 if (players.length === 0) {
   showPlayerCountInput();
 } else {
@@ -212,4 +244,3 @@ if (players.length === 0) {
 </script>
 </body>
 </html>
-
