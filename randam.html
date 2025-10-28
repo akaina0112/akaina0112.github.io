@@ -23,23 +23,26 @@ input {font-size:18px; margin:5px; padding:8px;}
   text-align: center;
   font-size: 1.5em;
 }
-
-.resultBox h3 {
-  margin: 0 0 5px 0;
-}
-
+.resultBox h3 {margin: 0 0 5px 0;}
 #punishmentsContainer {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   background: #fff;
   border-radius: 8px;
-  padding: 10px;
-  margin: 10px auto;
+  padding: 20px;
   width: 80%;
-  max-height: 40vh;
+  max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  display: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
-
+#punishmentsContainer button {
+  align-self: flex-end;
+  background:#f44336;
+  margin-bottom: 10px;
+}
+#punishmentsContainer button:hover {background:#d32f2f;}
 #backBtn {background:#f44336;}
 #backBtn:hover {background:#d32f2f;}
 </style>
@@ -64,7 +67,10 @@ input {font-size:18px; margin:5px; padding:8px;}
   <button id="nextMatchBtn" style="display:none;">次の試合へ 🏁</button>
   <button id="viewResultBtn">結果一覧を見る 📋</button>
   <button id="showPunishmentsBtn">罰ゲーム一覧を見る 🎯</button>
-  <div id="punishmentsContainer"></div>
+  <div id="punishmentsContainer">
+    <button id="closePunishmentsBtn">× 閉じる</button>
+    <div id="punishmentsContent"></div>
+  </div>
   <button id="resetBtn">リセット 🔁</button>
 </div>
 
@@ -88,7 +94,7 @@ let currentIndex = 0;
 let matchCount = parseInt(localStorage.getItem("matchCount") || "1");
 let results = JSON.parse(localStorage.getItem("rouletteResults") || "{}");
 let punishmentList = JSON.parse(localStorage.getItem("punishmentList") || "{}");
-let currentMatchResults = {}; // 今の試合での回数管理
+let currentMatchResults = {};
 
 const setupDiv = document.getElementById("setup");
 const rouletteDiv = document.getElementById("roulette");
@@ -97,7 +103,8 @@ const resultDiv = document.getElementById("result");
 const currentPlayerEl = document.getElementById("currentPlayer");
 const matchInfoEl = document.getElementById("matchInfo");
 const resultsContainer = document.getElementById("resultsContainer");
-const punishmentsContainer = document.getElementById("punishmentsContainer");
+const punishmentsContainerEl = document.getElementById("punishmentsContainer");
+const punishmentsContent = document.getElementById("punishmentsContent");
 
 // 人数入力
 document.getElementById("setPlayers").addEventListener("click", ()=>{
@@ -160,7 +167,7 @@ function startRoulette(){
   const name = players[currentIndex];
   if(!currentMatchResults[name]) currentMatchResults[name]=0;
   currentMatchResults[name]++;
-  const isPunishment = currentMatchResults[name]>1; // 2回目以降
+  const isPunishment = currentMatchResults[name]>1;
 
   let pickCount = Math.random()<0.5?1:2;
   let finalPicked = pickUniqueRandom(weapons, pickCount);
@@ -202,7 +209,7 @@ function startRoulette(){
   },50);
 }
 
-// ボタン
+// ボタン操作
 document.getElementById("shuffleBtn").addEventListener("click", startRoulette);
 document.getElementById("nextPlayerBtn").addEventListener("click", ()=>{
   currentIndex++;
@@ -216,7 +223,7 @@ document.getElementById("nextMatchBtn").addEventListener("click", ()=>{
   showPlayer();
 });
 
-// 結果一覧表示
+// 結果一覧
 document.getElementById("viewResultBtn").addEventListener("click", ()=>{
   rouletteDiv.style.display = "none";
   allResultsDiv.style.display = "flex";
@@ -251,23 +258,25 @@ document.getElementById("viewResultBtn").addEventListener("click", ()=>{
   }
 });
 
+// 戻る
 document.getElementById("backBtn").addEventListener("click", ()=>{
   allResultsDiv.style.display="none";
   rouletteDiv.style.display="flex";
 });
 
-// 罰ゲーム一覧表示切替
+// 罰ゲーム一覧表示
 document.getElementById("showPunishmentsBtn").addEventListener("click", ()=>{
-  if(punishmentsContainer.style.display === "block"){
-    punishmentsContainer.style.display = "none"; // 非表示
-  } else {
-    let html = "<h3>🎯 罰ゲーム一覧</h3>";
-    for(const name in punishmentList){
-      html += `👤 ${name}: ${punishmentList[name].join(", ")}<br>`;
-    }
-    punishmentsContainer.innerHTML = html;
-    punishmentsContainer.style.display = "block"; // 表示
+  let html = "<h3>🎯 罰ゲーム一覧</h3>";
+  for(const name in punishmentList){
+    html += `👤 ${name}: ${punishmentList[name].join(", ")}<br>`;
   }
+  punishmentsContent.innerHTML = html;
+  punishmentsContainerEl.style.display = "flex";
+});
+
+// 罰ゲーム閉じる
+document.getElementById("closePunishmentsBtn").addEventListener("click", ()=>{
+  punishmentsContainerEl.style.display = "none";
 });
 
 // リセット
@@ -325,4 +334,3 @@ window.onload = () => {
 </script>
 </body>
 </html>
-
