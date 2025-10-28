@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>荒野行動 縛りルーレット</title>
 <style>
-html, body { height:100%; margin:0; padding:0; font-family:Arial,sans-serif; background:#f2f2f2; }
-#setup, #roulette { display:none; flex-direction:column; justify-content:center; align-items:center; height:100vh; }
-#result { font-size:6vw; text-align:center; padding:20px; background:#fff; border-radius:10px; margin-bottom:20px; box-shadow:0 4px 8px rgba(0,0,0,0.15); }
-button { font-size:18px; padding:12px 25px; margin:10px; cursor:pointer; border:none; border-radius:6px; background:#4CAF50; color:white; }
-button:hover { background:#45a049; }
-input { font-size:18px; margin:5px; padding:8px; }
-#currentPlayer { font-size:2em; color:#222; margin:10px 0 5px 0; text-align:center; }
-#matchInfo { font-size:1.5em; color:#555; margin-bottom:15px; text-align:center; }
+html, body {height:100%; margin:0; font-family:Arial,sans-serif; background:#f2f2f2;}
+#setup, #roulette {display:none; flex-direction:column; justify-content:center; align-items:center; height:100vh;}
+#result {font-size:6vw; text-align:center; padding:20px; background:#fff; border-radius:10px; margin-bottom:20px; box-shadow:0 4px 8px rgba(0,0,0,0.15);}
+button {font-size:18px; padding:12px 25px; margin:10px; cursor:pointer; border:none; border-radius:6px; background:#4CAF50; color:white;}
+button:hover {background:#45a049;}
+input {font-size:18px; margin:5px; padding:8px;}
+#currentPlayer {font-size:2em; color:#222; margin:10px 0 5px 0; text-align:center;}
+#matchInfo {font-size:1.5em; color:#555; margin-bottom:15px; text-align:center;}
+.resultBox {background:#fff; border-radius:8px; padding:10px; margin:5px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
 </style>
 </head>
 <body>
@@ -35,6 +36,7 @@ input { font-size:18px; margin:5px; padding:8px; }
   <button id="nextMatchBtn" style="display:none;">次の試合へ 🏁</button>
   <button id="viewResultBtn">結果一覧を見る 📋</button>
   <button id="resetBtn">リセット 🔁</button>
+  <div id="resultBoxes"></div>
 </div>
 
 <script>
@@ -50,57 +52,61 @@ let players = [];
 let currentIndex = 0;
 let matchCount = parseInt(localStorage.getItem("matchCount") || "1");
 let results = JSON.parse(localStorage.getItem("rouletteResults") || "{}");
+let currentMatchResults = {}; // 今の試合での回数管理
 
 const setupDiv = document.getElementById("setup");
 const rouletteDiv = document.getElementById("roulette");
 const resultDiv = document.getElementById("result");
 const currentPlayerEl = document.getElementById("currentPlayer");
 const matchInfoEl = document.getElementById("matchInfo");
+const resultBoxes = document.getElementById("resultBoxes");
 
-// 人数入力 → 名前入力
-document.getElementById("setPlayers").addEventListener("click", () => {
+// 人数入力
+document.getElementById("setPlayers").addEventListener("click", ()=>{
   const count = parseInt(document.getElementById("playerCount").value);
   const nameInputs = document.getElementById("nameInputs");
-  nameInputs.innerHTML = "";
-  if (count >= 1 && count <= 5) {
-    for (let i=0; i<count; i++) {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.placeholder = `プレイヤー${i+1}の名前`;
+  nameInputs.innerHTML="";
+  if(count>=1 && count<=5){
+    for(let i=0;i<count;i++){
+      const input=document.createElement("input");
+      input.type="text";
+      input.placeholder=`プレイヤー${i+1}の名前`;
       nameInputs.appendChild(input);
     }
-    document.getElementById("startBtn").style.display = "block";
+    document.getElementById("startBtn").style.display="block";
   }
 });
 
-document.getElementById("startBtn").addEventListener("click", () => {
+// 名前入力 → ルーレット画面
+document.getElementById("startBtn").addEventListener("click", ()=>{
   const inputs = document.querySelectorAll("#nameInputs input");
-  players = Array.from(inputs).map(i => i.value.trim()).filter(n=>n!=="");
+  players = Array.from(inputs).map(i=>i.value.trim()).filter(n=>n!=="");
   if(players.length===0) return alert("名前を入力してください！");
-  setupDiv.style.display = "none";
-  rouletteDiv.style.display = "flex";
-  currentIndex = 0;
+  setupDiv.style.display="none";
+  rouletteDiv.style.display="flex";
+  currentIndex=0;
+  currentMatchResults={};
   showPlayer();
 });
 
 // 現在のプレイヤー表示
-function showPlayer() {
+function showPlayer(){
   if(currentIndex<players.length){
-    const name = players[currentIndex];
-    currentPlayerEl.innerHTML = `🎮 現在のプレイヤー：<strong>${name}</strong>`;
-    matchInfoEl.innerHTML = `🏆 第${matchCount}試合`;
-    resultDiv.innerHTML = "結果表示はここ";
+    const name=players[currentIndex];
+    currentPlayerEl.innerHTML=`🎮 現在のプレイヤー：<strong>${name}</strong>`;
+    matchInfoEl.innerHTML=`🏆 第${matchCount}試合`;
+    resultDiv.innerHTML="結果表示はここ";
     document.getElementById("nextPlayerBtn").style.display="none";
     document.getElementById("nextMatchBtn").style.display="none";
-  } else {
+  }else{
     document.getElementById("nextPlayerBtn").style.display="none";
     document.getElementById("nextMatchBtn").style.display="block";
   }
 }
 
-// 配列ランダム取得
-function pickUniqueRandom(arr, count){
-  const n=Math.min(count, arr.length);
+// ランダム取得
+function pickUniqueRandom(arr,count){
+  const n=Math.min(count,arr.length);
   const copy=arr.slice();
   const picked=[];
   for(let i=0;i<n;i++){
@@ -110,21 +116,27 @@ function pickUniqueRandom(arr, count){
   return picked;
 }
 
-// ルーレット開始
-let currentMatchResults = {}; // この試合内のプレイヤーの回数を管理
-
-function startRoulette() {
+// ルーレット
+function startRoulette(){
   const name = players[currentIndex];
-  if(!currentMatchResults[name]) currentMatchResults[name] = 0;
+  if(!currentMatchResults[name]) currentMatchResults[name]=0;
   currentMatchResults[name]++;
+  const isPunishment = currentMatchResults[name]>1; // 2回目以降
 
-  const isPunishment = currentMatchResults[name] > 1; // 2回目以降
-  const pickCount = Math.random() < 0.5 ? 1 : 2;
-  const finalPicked = isPunishment ? ["罰ゲーム"] : pickUniqueRandom(weapons, pickCount);
+  let pickCount = Math.random()<0.5?1:2;
+  let finalPicked;
+  if(isPunishment){
+    // 罰ゲームの入力
+    const punishInput = prompt("罰ゲームは？", "武器名");
+    // weaponsからランダムで上書き
+    finalPicked = pickUniqueRandom(weapons, pickCount);
+    if(punishInput) finalPicked[0]=punishInput;
+  }else{
+    finalPicked = pickUniqueRandom(weapons, pickCount);
+  }
 
-  let count = 0;
-  const steps = 60;
-
+  let count=0;
+  const steps=60;
   const interval = setInterval(()=>{
     const random1 = weapons[Math.floor(Math.random()*weapons.length)];
     const random2 = weapons[Math.floor(Math.random()*weapons.length)];
@@ -132,20 +144,30 @@ function startRoulette() {
     count++;
     if(count>=steps){
       clearInterval(interval);
-      resultDiv.innerHTML = `${name} の縛り結果<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1] || "自由な武器"}`;
+      resultDiv.innerHTML = `${name} の縛り結果<br>1. ${finalPicked[0]}<br>2. ${finalPicked[1]||"自由な武器"}`;
       
-      // 試合ごとに保存
       const matchKey = `試合${matchCount}_${name}`;
-      results[matchKey] = { title: `第${matchCount}試合`, name, shibari: finalPicked };
+      results[matchKey]={title:`第${matchCount}試合`, name, shibari:finalPicked};
       localStorage.setItem("rouletteResults", JSON.stringify(results));
-
+      updateResultBoxes(); // box表示
       document.getElementById("nextPlayerBtn").style.display="block";
     }
-  }, 50);
+  },50);
 }
 
+// 結果Box表示
+function updateResultBoxes(){
+  resultBoxes.innerHTML="";
+  const matchResults = Object.values(results).filter(r=>r.title===`第${matchCount}試合`);
+  matchResults.forEach(r=>{
+    const div=document.createElement("div");
+    div.className="resultBox";
+    div.innerHTML=`🏷️ ${r.title}｜👤 ${r.name}<br>🔫 ${r.shibari.join(", ")}`;
+    resultBoxes.appendChild(div);
+  });
+}
 
-// ボタン操作
+// ボタン
 document.getElementById("shuffleBtn").addEventListener("click", startRoulette);
 document.getElementById("nextPlayerBtn").addEventListener("click", ()=>{
   currentIndex++;
@@ -155,16 +177,11 @@ document.getElementById("nextMatchBtn").addEventListener("click", ()=>{
   matchCount++;
   localStorage.setItem("matchCount", matchCount);
   currentIndex=0;
+  currentMatchResults={};
   showPlayer();
 });
 document.getElementById("viewResultBtn").addEventListener("click", ()=>{
-  let text="📋 保存された結果一覧\n\n";
-  for(const key in results){
-    const r=results[key];
-    const shibari = Array.isArray(r.shibari)?r.shibari:["未実施"];
-    text += `${r.title}｜${r.name}\n🔫 ${shibari.join(", ")}\n\n`;
-  }
-  alert(text || "まだ結果がありません。");
+  alert(JSON.stringify(results,null,2));
 });
 document.getElementById("resetBtn").addEventListener("click", ()=>{
   if(confirm("リセットしますか？保存データが全て消えます。")){
@@ -179,7 +196,5 @@ document.getElementById("resetBtn").addEventListener("click", ()=>{
 // 初期表示
 window.onload = ()=>{ setupDiv.style.display="flex"; };
 </script>
-
 </body>
 </html>
-
