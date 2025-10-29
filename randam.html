@@ -45,6 +45,7 @@ input {font-size: 18px;margin: 5px;padding: 8px;}
   <button id="nextMatchBtn" style="display:none;">次の試合へ 🏁</button>
   <button id="viewResultBtn">結果一覧を見る 📋</button>
   <button id="showPunishmentsBtn">罰ゲーム一覧を見る 🎯</button>
+  <button id="shareBtn">結果を共有する 🔗</button>
 </div>
 
 <!-- 結果一覧 -->
@@ -81,6 +82,7 @@ const resultsContainer = document.getElementById("resultsContainer");
 const punishmentsContent = document.getElementById("punishmentsContent");
 const backBtn = document.getElementById("backBtn");
 const closePunishmentsBtn = document.getElementById("closePunishmentsBtn");
+const shareBtn = document.getElementById("shareBtn");
 
 const weapons = [
  "95式","G36C","AR18(89式)","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X","ADS","APS",
@@ -97,14 +99,33 @@ let currentMatch = 1;
 let results = JSON.parse(localStorage.getItem("results")) || {};
 let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 
-window.onload = () => {
-  if (localStorage.getItem("results")) {
-    if (confirm("保存データがあります。破棄しますか？")) {
-      localStorage.clear();
-    }
+// 🔗 URL共有データを読み込む処理
+const urlParams = new URLSearchParams(location.search);
+if (urlParams.has("data")) {
+  try {
+    const data = JSON.parse(decodeURIComponent(urlParams.get("data")));
+    players = data.players || [];
+    results = data.results || {};
+    punishments = data.punishments || {};
+    currentMatch = data.currentMatch || 1;
+    setupDiv.style.display = "none";
+    rouletteDiv.style.display = "flex";
+    updatePlayerDisplay();
+    localStorage.setItem("results", JSON.stringify(results));
+    localStorage.setItem("punishments", JSON.stringify(punishments));
+  } catch (e) {
+    alert("共有データの読み込みに失敗しました。");
   }
-  setupDiv.style.display = "flex";
-};
+} else {
+  window.onload = () => {
+    if (localStorage.getItem("results")) {
+      if (confirm("保存データがあります。破棄しますか？")) {
+        localStorage.clear();
+      }
+    }
+    setupDiv.style.display = "flex";
+  };
+}
 
 // 人数入力後の名前入力
 document.getElementById("setPlayers").onclick = () => {
@@ -147,8 +168,8 @@ shuffleBtn.onclick = async () => {
 
   if (results[key][name]) {
     const punishmentText = prompt("罰ゲームは？", "罰ゲーム内容");
-    if (punishmentText === null) return; // キャンセルで中止
-    await spinRoulette(2000); // ルーレットアニメーション
+    if (punishmentText === null) return; 
+    await spinRoulette(2000);
     const weapon1 = weapons[Math.floor(Math.random() * weapons.length)];
     const weapon2 = "自由な武器";
     results[key][name] = `${weapon1}, ${weapon2} (罰ゲーム：${punishmentText})`;
@@ -272,6 +293,21 @@ closePunishmentsBtn.onclick = () => {
   rouletteDiv.style.display = "flex";
 };
 
+// 🔗 結果をURLで共有
+shareBtn.onclick = () => {
+  const data = {
+    players,
+    results,
+    punishments,
+    currentMatch
+  };
+  const encoded = encodeURIComponent(JSON.stringify(data));
+  const url = `${location.origin}${location.pathname}?data=${encoded}`;
+  navigator.clipboard.writeText(url)
+    .then(() => alert("URLをコピーしました！友達に共有できます✨"))
+    .catch(() => alert("URLコピーに失敗しました…"));
+};
+
 function updatePlayerDisplay() {
   const name = players[currentPlayerIndex];
   currentPlayerLabel.textContent = `🎮 現在のプレイヤー：${name}`;
@@ -280,5 +316,3 @@ function updatePlayerDisplay() {
 </script>
 </body>
 </html>
-
-
