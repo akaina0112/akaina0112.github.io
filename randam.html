@@ -164,20 +164,18 @@ startBtn.onclick = () => {
 shuffleBtn.onclick = async () => {
   const name = players[currentPlayerIndex];
   const key = `試合${currentMatch}`;
+  const txt_rei = "例: 一週間で5kg痩せる";
+  const weapon2 = "自由な武器";
   results[key] = results[key] || {};
   if (results[key][name]) {
     let punishmentText;
-    const txt_rei = "例: 一週間で5kg痩せる";
     // --- 入力チェック付き prompt ---
     while (true) {
       punishmentText = prompt("罰ゲームは？", txt_rei);
       // キャンセルした場合は終了
       if (punishmentText === null) return;
       // 入力が空欄、または例文のままのとき
-      if (
-        punishmentText.trim() === "" ||
-        punishmentText === txt_rei
-      ) {
+      if (punishmentText.trim() === "" || punishmentText === txt_rei) {
         alert("入力してください。");
         continue; // もう一度promptを表示
       }
@@ -187,7 +185,6 @@ shuffleBtn.onclick = async () => {
     // --- ルーレット演出と結果登録 ---
     await spinRoulette(2000);
     const weapon1 = weapons[Math.floor(Math.random() * weapons.length)];
-    const weapon2 = "自由な武器";
     results[key][name] = `${weapon1}, ${weapon2} (罰ゲーム：${punishmentText})`;
     punishments[name] = punishments[name] || [];
     punishments[name].push(`試合${currentMatch}：${punishmentText}`);
@@ -334,4 +331,5 @@ function updatePlayerDisplay() {
 </script>
 </body>
 </html>
+
 
