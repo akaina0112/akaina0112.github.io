@@ -144,7 +144,12 @@ window.addEventListener("load", () => {
 });
 
 // 人数入力後の名前入力
-document.getElementById("setPlayers").onclick = () => {
+document.getElementById("setPlayers").onclick = () => setPlayerInputs();
+playerCountInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") setPlayerInputs();
+});
+
+function setPlayerInputs() {
   const count = parseInt(playerCountInput.value);
   if (isNaN(count) || count < 1 || count > 5) {
     alert("人数は1〜5人の間で入力してください。");
@@ -156,9 +161,15 @@ document.getElementById("setPlayers").onclick = () => {
     input.placeholder = `プレイヤー${i + 1}の名前`;
     input.id = `player${i}`;
     nameInputsDiv.appendChild(input);
+
+    // 🔹 各名前入力欄でも Enter で開始できるように
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") startBtn.click();
+    });
   }
   startBtn.style.display = "block";
-};
+}
+
 
 // 名前保存してルーレットへ
 startBtn.onclick = () => {
@@ -331,6 +342,7 @@ function updatePlayerDisplay() {
 </script>
 </body>
 </html>
+
 
 
 
