@@ -4,27 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>荒野行動 縛りルーレット</title>
-
 <style>
-<style>
-html, body {height: 100%;margin: 0;font-family: Arial, sans-serif;background: #f2f2f2;}
-#setup, #roulette, #allResults, #punishmentsContainer {display: none;flex-direction: column;justify-content: center;align-items: center;height: 100vh;}
-#result {font-size: 6vw;text-align: center;padding: 20px;background: #fff;border-radius: 10px;margin-bottom: 20px;box-shadow: 0 4px 8px rgba(0,0,0,0.15);}
-button {font-size: 18px;padding: 12px 25px;margin: 10px;cursor: pointer;border: none;border-radius: 6px;background: #4CAF50;color: white;}
-button:hover {background: #45a049;}
-input {font-size: 18px;margin: 5px;padding: 8px;}
-#currentPlayer {font-size: 2em;color: #222;margin: 10px 0 5px 0;text-align: center;}
-#matchInfo {font-size: 1.5em;color: #555;margin-bottom: 15px;text-align: center;}
-.resultBox {background: #fff;border-radius: 8px;padding: 10px;margin: 10px auto;width: 80%;box-shadow: 0 2px 6px rgba(0,0,0,0.1);text-align: center;font-size: 1.5em;}
-.resultBox h3 {margin: 0 0 5px 0;}
-#backBtn, #closePunishmentsBtn {background: #f44336;}
-#backBtn:hover, #closePunishmentsBtn:hover {background: #d32f2f;}
-#resultsContainer, #punishmentsContent {width: 90%;max-height: 80vh;overflow-y: auto;}
-#playerCount {width: 20%;}
-</style>
+html, body {height:100%;margin:0;font-family:Arial,sans-serif;background:#f2f2f2;}
+#setup, #roulette, #allResults, #punishmentsContainer {display:none;flex-direction:column;justify-content:center;align-items:center;height:100vh;}
+#result {font-size:6vw;text-align:center;padding:20px;background:#fff;border-radius:10px;margin-bottom:20px;box-shadow:0 4px 8px rgba(0,0,0,0.15);}
+button {font-size:18px;padding:12px 25px;margin:5px;cursor:pointer;border:none;border-radius:6px;background:#4CAF50;color:white;}
+button:hover {background:#45a049;}
+input {font-size:18px;margin:5px;padding:8px;}
+#currentPlayer {font-size:2em;color:#222;margin:10px 0 5px 0;text-align:center;}
+#matchInfo {font-size:1.5em;color:#555;margin-bottom:15px;text-align:center;}
+.resultBox {background:#fff;border-radius:8px;padding:10px;margin:10px auto;width:80%;box-shadow:0 2px 6px rgba(0,0,0,0.1);text-align:center;font-size:1.5em;}
+.resultBox h3 {margin:0 0 5px 0;}
+#backBtn,#closePunishmentsBtn {background:#f44336;}
+#backBtn:hover,#closePunishmentsBtn:hover {background:#d32f2f;}
+#resultsContainer,#punishmentsContent {width:90%;max-height:80vh;overflow-y:auto;}
+#playerCount {width:20%;}
+#modeButtons button {background:#2196F3;}
+#modeButtons button:hover {background:#1976D2;}
 </style>
 </head>
-
 <body>
 
 <!-- 設定画面 -->
@@ -38,6 +36,11 @@ input {font-size: 18px;margin: 5px;padding: 8px;}
 
 <!-- ルーレット画面 -->
 <div id="roulette">
+  <div id="modeButtons" style="margin-bottom:10px;">
+    <button class="modeBtn" data-mode="normal">通常</button>
+    <button class="modeBtn" data-mode="team">団体</button>
+    <button class="modeBtn" data-mode="menst">メンスト</button>
+  </div>
   <h1>🎯 荒野行動 縛りルーレット</h1>
   <h2 id="currentPlayer"></h2>
   <div id="matchInfo"></div>
@@ -65,307 +68,174 @@ input {font-size: 18px;margin: 5px;padding: 8px;}
 </div>
 
 <script>
-const setupDiv = document.getElementById("setup");
-const rouletteDiv = document.getElementById("roulette");
-const allResultsDiv = document.getElementById("allResults");
-const punishmentsDiv = document.getElementById("punishmentsContainer");
-const playerCountInput = document.getElementById("playerCount");
-const nameInputsDiv = document.getElementById("nameInputs");
-const startBtn = document.getElementById("startBtn");
-const shuffleBtn = document.getElementById("shuffleBtn");
-const nextPlayerBtn = document.getElementById("nextPlayerBtn");
-const nextMatchBtn = document.getElementById("nextMatchBtn");
-const currentPlayerLabel = document.getElementById("currentPlayer");
-const matchInfo = document.getElementById("matchInfo");
-const resultDiv = document.getElementById("result");
-const viewResultBtn = document.getElementById("viewResultBtn");
-const showPunishmentsBtn = document.getElementById("showPunishmentsBtn");
-const resultsContainer = document.getElementById("resultsContainer");
-const punishmentsContent = document.getElementById("punishmentsContent");
-const backBtn = document.getElementById("backBtn");
-const closePunishmentsBtn = document.getElementById("closePunishmentsBtn");
-const shareBtn = document.getElementById("shareBtn");
+const setupDiv=document.getElementById("setup");
+const rouletteDiv=document.getElementById("roulette");
+const allResultsDiv=document.getElementById("allResults");
+const punishmentsDiv=document.getElementById("punishmentsContainer");
+const playerCountInput=document.getElementById("playerCount");
+const nameInputsDiv=document.getElementById("nameInputs");
+const startBtn=document.getElementById("startBtn");
+const shuffleBtn=document.getElementById("shuffleBtn");
+const nextPlayerBtn=document.getElementById("nextPlayerBtn");
+const nextMatchBtn=document.getElementById("nextMatchBtn");
+const currentPlayerLabel=document.getElementById("currentPlayer");
+const matchInfo=document.getElementById("matchInfo");
+const resultDiv=document.getElementById("result");
+const viewResultBtn=document.getElementById("viewResultBtn");
+const showPunishmentsBtn=document.getElementById("showPunishmentsBtn");
+const resultsContainer=document.getElementById("resultsContainer");
+const punishmentsContent=document.getElementById("punishmentsContent");
+const backBtn=document.getElementById("backBtn");
+const closePunishmentsBtn=document.getElementById("closePunishmentsBtn");
+const shareBtn=document.getElementById("shareBtn");
+const modeBtns=document.querySelectorAll(".modeBtn");
 
-const weapons = [
+const weapons=[
  "95式","G36C","AR18(89式)","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X","ADS","APS",
  "Dual TMP","UZI","MK5","MP5","PP2000","05式","トンプソン","P90",
  "LSR-8","AWM","CS","AMR-83","Kar98k","M24","ゴールデンクマ","M1891","爆裂弓","SVD","Val","88式","56式","クロスボウ",
  "M860","M88C","SK12",
  "ガトリングガン","MK60","95式軽機関銃"
 ];
-const bgColors = ["#fff", "#f9f0f0", "#f0f9f9", "#f0f0f9", "#f9f9f0", "#f8f0f8", "#f0f8f0", "#f8f8f0", "#f0f0f8"];
+//団体
+const weapons2 = [
+ "95式","G36C","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X",
+ "Dual TMP","UZI","MK5","MP5","PP2000","05式","P90",
+ "AWM","CS","AMR-83","M24","爆裂弓","SVD",
+ "M860","M88C","SK12"
+];
+//メンスト
+const weapons3 = [
+ "95式","G36C","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X",
+ "Dual TMP","UZI","MK5","MP5","PP2000","05式","P90",
+ "AWM","CS","AMR-83","M24","爆裂弓","SVD",
+ "M860","M88C","SK12"
+];
+const bgColors=["#fff","#f9f0f0","#f0f9f9","#f0f0f9","#f9f9f0","#f8f0f8","#f0f8f0","#f8f8f0","#f0f0f8"];
 
-let players = [];
-let currentPlayerIndex = 0;
-let currentMatch = 1;
-let results = JSON.parse(localStorage.getItem("results")) || {};
-let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
+let players=[];
+let currentPlayerIndex=0;
+let currentMatch=1;
+let results=JSON.parse(localStorage.getItem("results"))||{};
+let punishments=JSON.parse(localStorage.getItem("punishments"))||{};
+let currentMode=localStorage.getItem("mode")||"normal";
+const modeTitles={normal:"🎯 荒野行動 縛りルーレット（通常）",team:"🎯 荒野行動 縛りルーレット（団体）",menst:"🎯 荒野行動 縛りルーレット（メンスト）"};
 
-// 🌐 URLに ?data= がある場合 → データ読み込み＋URLリセット
-// 🌐 URLに ?data= がある場合 → データ読み込み＋URLリセット
-window.addEventListener("load", () => {
-  const url = new URL(window.location.href);
-  const dataParam = url.searchParams.get("data");
-
-  if (dataParam) {
-    try {
-      const decoded = decodeURIComponent(dataParam);
-      const data = JSON.parse(decoded);
-
-      // データを反映
-      players = data.players || [];
-      results = data.results || {};
-      punishments = data.punishments || {};
-      currentMatch = data.currentMatch || 1;
-
-      // 保存
-      localStorage.setItem("results", JSON.stringify(results));
-      localStorage.setItem("punishments", JSON.stringify(punishments));
-      localStorage.setItem("currentMatch", currentMatch);
-      localStorage.setItem("players", JSON.stringify(players));
-
-      console.log("✅ URLデータを読み込みました。");
-
-      // 表示更新
-      setupDiv.style.display = "none";
-      rouletteDiv.style.display = "flex";
-      updatePlayerDisplay();
-
-      // URLリセット（?dataを削除）
-      url.searchParams.delete("data");
-      window.history.replaceState({}, document.title, url.pathname);
-
-    } catch (err) {
-      console.error("⚠️ データ読み込み失敗:", err);
-      alert("URLデータの読み込みに失敗しました。");
-    }
-  } else {
-    // 通常起動時：保存データがあるか確認
-    if (localStorage.getItem("results")) {
-      const keep = confirm("保存データがあります。破棄しますか？");
-      if (keep) {
-        // ✅ 「はい」→破棄して最初から
-        localStorage.clear();
-        setupDiv.style.display = "flex";
-      } else {
-        // ❌ 「いいえ」→保存データを使って再開
-        players = JSON.parse(localStorage.getItem("players")) || [];
-        results = JSON.parse(localStorage.getItem("results")) || {};
-        punishments = JSON.parse(localStorage.getItem("punishments")) || {};
-        currentMatch = parseInt(localStorage.getItem("currentMatch")) || 1;
-
-        setupDiv.style.display = "none";
-        rouletteDiv.style.display = "flex";
-        updatePlayerDisplay();
-      }
-    } else {
-      setupDiv.style.display = "flex";
-    }
-  }
-});
-
-// 人数入力後の名前入力
-document.getElementById("setPlayers").onclick = () => setPlayerInputs();
-playerCountInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") setPlayerInputs();
-});
-
-function setPlayerInputs() {
-  const count = parseInt(playerCountInput.value);
-  if (isNaN(count) || count < 1 || count > 5) {
-    alert("人数は1〜5人の間で入力してください。");
-    return;
-  }
-  nameInputsDiv.innerHTML = "";
-  for (let i = 0; i < count; i++) {
-    const input = document.createElement("input");
-    input.placeholder = `プレイヤー${i + 1}の名前`;
-    input.id = `player${i}`;
-    nameInputsDiv.appendChild(input);
-
-    // 🔹 各名前入力欄でも Enter で開始できるように
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") startBtn.click();
-    });
-  }
-  startBtn.style.display = "block";
+// モード切替
+modeBtns.forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode)));
+function setMode(mode){
+ currentMode=mode;
+ localStorage.setItem("mode",mode);
+ rouletteDiv.querySelector("h1").textContent=modeTitles[mode];
+ displayResult();
 }
 
+// モードに応じた武器配列
+function getWeaponArray(){
+ if(currentMode==="normal") return weapons;
+ if(currentMode==="team") return weapons2;
+ if(currentMode==="menst") return weapons3;
+ return weapons;
+}
 
-// 名前保存してルーレットへ
-startBtn.onclick = () => {
-  players = [];
-  for (let i = 0; i < parseInt(playerCountInput.value); i++) {
-    const val = document.getElementById(`player${i}`).value.trim();
-    if (!val) {
-      alert("全員の名前を入力してください。");
-      return;
-    }
-    players.push(val);
-  }
-  setupDiv.style.display = "none";
-  rouletteDiv.style.display = "flex";
-  updatePlayerDisplay();
-};
+// ルーレット演出
+shuffleBtn.onclick=async ()=>{
+ const name=players[currentPlayerIndex];
+ const key=`試合${currentMatch}`;
+ results[key]=results[key]||{};
+ const weaponsArr=getWeaponArray();
+ await spinRoulette(2000);
+ const weapon1=weaponsArr[Math.floor(Math.random()*weaponsArr.length)];
+ const weapon2=weaponsArr[Math.floor(Math.random()*weaponsArr.length)];
+ let resultText=`${weapon1}, ${weapon2}`;
+ if(results[key][name] && confirm("罰ゲームを入力しますか？")){
+   const punishment=prompt("罰ゲームを入力");
+   if(punishment){resultText+=` (罰ゲーム:${punishment})`; punishments[name]=punishments[name]||[]; punishments[name].push(`試合${currentMatch}：${punishment}`);}
+ }
+ results[key][name] = resultText;
+ localStorage.setItem("results",JSON.stringify(results));
+ localStorage.setItem("punishments",JSON.stringify(punishments));
+ resultDiv.textContent=`${name} の結果：${results[key][name]}`;
+ if(currentPlayerIndex<players.length-1){nextPlayerBtn.style.display="inline-block";nextMatchBtn.style.display="none";}
+ else{nextPlayerBtn.style.display="none";nextMatchBtn.style.display="inline-block";}
+}
 
-// 🎲 ルーレット演出付きボタン
-shuffleBtn.onclick = async () => {
-  const name = players[currentPlayerIndex];
-  const key = `試合${currentMatch}`;
-  const txt_rei = "例: 一週間で5kg痩せる";
-  results[key] = results[key] || {};
-
-  if (results[key][name]) {
-    let punishmentText;
-    while (true) {
-      punishmentText = prompt("罰ゲームは？", txt_rei);
-      if (punishmentText === null) return;
-      if (punishmentText.trim() === "" || punishmentText === txt_rei) {
-        alert("入力してください。");
-        continue;
-      }
-      break;
-    }
-    await spinRoulette(2000);
-    const weapon1 = weapons[Math.floor(Math.random() * weapons.length)];
-    const weapon2 = "自由な武器";
-    results[key][name] = `${weapon1}, ${weapon2} (罰ゲーム：${punishmentText})`;
-    punishments[name] = punishments[name] || [];
-    punishments[name].push(`試合${currentMatch}：${punishmentText}`);
-  } else {
-    await spinRoulette(2000);
-    const weapon1 = weapons[Math.floor(Math.random() * weapons.length)];
-    const weapon2 = weapons[Math.floor(Math.random() * weapons.length)];
-    results[key][name] = `${weapon1}, ${weapon2}`;
-  }
-
-  localStorage.setItem("results", JSON.stringify(results));
-  localStorage.setItem("punishments", JSON.stringify(punishments));
-  resultDiv.textContent = `${name} の結果：${results[key][name]}`;
-
-  if (currentPlayerIndex < players.length - 1) {
-    nextPlayerBtn.style.display = "inline-block";
-    nextMatchBtn.style.display = "none";
-  } else {
-    nextPlayerBtn.style.display = "none";
-    nextMatchBtn.style.display = "inline-block";
-  }
-};
-
-// 🎞 ルーレット演出
-function spinRoulette(duration = 2000) {
-  return new Promise(resolve => {
-    shuffleBtn.disabled = true;
-    const interval = setInterval(() => {
-      const w1 = weapons[Math.floor(Math.random() * weapons.length)];
-      const w2 = weapons[Math.floor(Math.random() * weapons.length)];
-      resultDiv.textContent = `🔄 ${w1}, ${w2}`;
-    }, 100);
-    setTimeout(() => {
-      clearInterval(interval);
-      shuffleBtn.disabled = false;
-      resolve();
-    }, duration);
-  });
+function spinRoulette(duration=2000){
+ return new Promise(resolve=>{
+   shuffleBtn.disabled=true;
+   const interval=setInterval(()=>{
+     const w1=getWeaponArray()[Math.floor(Math.random()*getWeaponArray().length)];
+     const w2=getWeaponArray()[Math.floor(Math.random()*getWeaponArray().length)];
+     resultDiv.textContent=`🔄 ${w1}, ${w2}`;
+   },100);
+   setTimeout(()=>{
+     clearInterval(interval);
+     shuffleBtn.disabled=false;
+     resolve();
+   },duration);
+ });
 }
 
 // 次のプレイヤー
-nextPlayerBtn.onclick = () => {
-  currentPlayerIndex++;
-  if (currentPlayerIndex >= players.length) {
-    nextPlayerBtn.style.display = "none";
-    nextMatchBtn.style.display = "inline-block";
-  } else {
-    updatePlayerDisplay();
-    resultDiv.textContent = "結果表示はここ";
-    nextPlayerBtn.style.display = "none";
-  }
+nextPlayerBtn.onclick=()=>{
+ currentPlayerIndex++;
+ if(currentPlayerIndex>=players.length){nextPlayerBtn.style.display="none";nextMatchBtn.style.display="inline-block";}
+ else{updatePlayerDisplay(); resultDiv.textContent="結果表示はここ"; nextPlayerBtn.style.display="none";}
 };
 
 // 次の試合
-nextMatchBtn.onclick = () => {
-  currentMatch++;
-  currentPlayerIndex = 0;
-  resultDiv.textContent = "結果表示はここ";
-  nextMatchBtn.style.display = "none";
-  updatePlayerDisplay();
-};
+nextMatchBtn.onclick=()=>{currentMatch++; currentPlayerIndex=0; resultDiv.textContent="結果表示はここ"; nextMatchBtn.style.display="none"; updatePlayerDisplay(); localStorage.setItem("currentMatch",currentMatch);}
 
-// 結果一覧
-viewResultBtn.onclick = () => {
-  rouletteDiv.style.display = "none";
-  allResultsDiv.style.display = "flex";
-  resultsContainer.innerHTML = "";
-  let colorIndex = 0;
-  for (const [match, playersData] of Object.entries(results)) {
-    const box = document.createElement("div");
-    box.className = "resultBox";
-    box.style.background = bgColors[colorIndex++ % bgColors.length];
-    const h3 = document.createElement("h3");
-    h3.textContent = match;
-    box.appendChild(h3);
-    for (const [name, result] of Object.entries(playersData)) {
-      const p = document.createElement("p");
-      p.textContent = `👤 ${name} 🔫 ${result}`;
-      box.appendChild(p);
-    }
-    resultsContainer.appendChild(box);
-  }
+// 結果表示
+viewResultBtn.onclick=()=>{
+ rouletteDiv.style.display="none";
+ allResultsDiv.style.display="flex";
+ resultsContainer.innerHTML="";
+ let colorIndex=0;
+ for(const [match,playersData] of Object.entries(results)){
+   const box=document.createElement("div");box.className="resultBox";box.style.background=bgColors[colorIndex++%bgColors.length];
+   const h3=document.createElement("h3");h3.textContent=match;box.appendChild(h3);
+   for(const [name,result] of Object.entries(playersData)){
+     const p=document.createElement("p");p.textContent=`👤 ${name} 🔫 ${result}`;box.appendChild(p);
+   }
+   resultsContainer.appendChild(box);
+ }
 };
 
 // 罰ゲーム一覧
-showPunishmentsBtn.onclick = () => {
-  rouletteDiv.style.display = "none";
-  punishmentsDiv.style.display = "flex";
-  punishmentsContent.innerHTML = "";
-  let colorIndex = 0;
-  for (const [name, list] of Object.entries(punishments)) {
-    const box = document.createElement("div");
-    box.className = "resultBox";
-    box.style.background = bgColors[colorIndex++ % bgColors.length];
-    const h3 = document.createElement("h3");
-    h3.textContent = name;
-    box.appendChild(h3);
-    list.forEach(item => {
-      const p = document.createElement("p");
-      p.textContent = item;
-      box.appendChild(p);
-    });
-    punishmentsContent.appendChild(box);
-  }
+showPunishmentsBtn.onclick=()=>{
+ rouletteDiv.style.display="none";
+ punishmentsDiv.style.display="flex";
+ punishmentsContent.innerHTML="";
+ let colorIndex=0;
+ for(const [name,list] of Object.entries(punishments)){
+   const box=document.createElement("div");box.className="resultBox";box.style.background=bgColors[colorIndex++%bgColors.length];
+   const h3=document.createElement("h3");h3.textContent=name;box.appendChild(h3);
+   list.forEach(item=>{const p=document.createElement("p");p.textContent=item;box.appendChild(p);});
+   punishmentsContent.appendChild(box);
+ }
 };
 
 // 閉じるボタン
-backBtn.onclick = () => {
-  allResultsDiv.style.display = "none";
-  rouletteDiv.style.display = "flex";
-};
-closePunishmentsBtn.onclick = () => {
-  punishmentsDiv.style.display = "none";
-  rouletteDiv.style.display = "flex";
-};
+backBtn.onclick=()=>{allResultsDiv.style.display="none"; rouletteDiv.style.display="flex";}
+closePunishmentsBtn.onclick=()=>{punishmentsDiv.style.display="none"; rouletteDiv.style.display="flex";}
 
-// 🔗 結果を共有
-shareBtn.onclick = () => {
-  const data = { players, results, punishments, currentMatch };
-  const encoded = encodeURIComponent(JSON.stringify(data));
-  const url = `${location.origin}${location.pathname}?data=${encoded}`;
-  navigator.clipboard.writeText(url)
-    .then(() => alert("URLをコピーしました！友達に共有できます✨"))
-    .catch(() => alert("URLコピーに失敗しました…"));
-};
-
-function updatePlayerDisplay() {
-  const name = players[currentPlayerIndex];
-  currentPlayerLabel.textContent = `🎮 現在のプレイヤー：${name}`;
-  matchInfo.textContent = `試合 ${currentMatch}`;
+// 共有
+shareBtn.onclick=()=>{
+ const data={players,results,punishments,currentMatch};
+ const encoded=encodeURIComponent(JSON.stringify(data));
+ const url=`${location.origin}${location.pathname}?data=${encoded}`;
+ navigator.clipboard.writeText(url).then(()=>alert("URLコピーしました！")).catch(()=>alert("コピー失敗"));
 }
+
+// プレイヤー表示更新
+function updatePlayerDisplay(){const name=players[currentPlayerIndex]; currentPlayerLabel.textContent=`🎮 現在のプレイヤー：${name}`; matchInfo.textContent=`試合 ${currentMatch}`}
+
+// 名前入力処理
+document.getElementById("setPlayers").onclick=setPlayerInputs;
+playerCountInput.addEventListener("keydown",e=>{if(e.key==="Enter") setPlayerInputs();});
+function setPlayerInputs(){const count=parseInt(playerCountInput.value);if(isNaN(count)||count<1||count>5){alert("人数は1〜5人");return;}nameInputsDiv.innerHTML="";for(let i=0;i<count;i++){const input=document.createElement("input");input.placeholder=`プレイヤー${i+1}の名前`;input.id=`player${i}`;nameInputsDiv.appendChild(input);input.addEventListener("keydown",e=>{if(e.key==="Enter") startBtn.click();});}startBtn.style.display="block";}
+startBtn.onclick=()=>{players=[];for(let i=0;i<parseInt(playerCountInput.value);i++){const val=document.getElementById(`player${i}`).value.trim();if(!val){alert("全員の名前を入力してください");return;}players.push(val);}setupDiv.style.display="none";rouletteDiv.style.display="flex";updatePlayerDisplay();setMode(currentMode);}
 </script>
 </body>
 </html>
-
-
-
-
-
-
