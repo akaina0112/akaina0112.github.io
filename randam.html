@@ -6,6 +6,7 @@
 <title>荒野行動 縛りルーレット</title>
 
 <style>
+<style>
 html, body {height: 100%;margin: 0;font-family: Arial, sans-serif;background: #f2f2f2;}
 #setup, #roulette, #allResults, #punishmentsContainer {display: none;flex-direction: column;justify-content: center;align-items: center;height: 100vh;}
 #result {font-size: 6vw;text-align: center;padding: 20px;background: #fff;border-radius: 10px;margin-bottom: 20px;box-shadow: 0 4px 8px rgba(0,0,0,0.15);}
@@ -20,6 +21,7 @@ input {font-size: 18px;margin: 5px;padding: 8px;}
 #backBtn:hover, #closePunishmentsBtn:hover {background: #d32f2f;}
 #resultsContainer, #punishmentsContent {width: 90%;max-height: 80vh;overflow-y: auto;}
 #playerCount {width: 20%;}
+</style>
 </style>
 </head>
 
@@ -99,33 +101,47 @@ let currentMatch = 1;
 let results = JSON.parse(localStorage.getItem("results")) || {};
 let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 
-// 🔗 URL共有データを読み込む処理
-const urlParams = new URLSearchParams(location.search);
-if (urlParams.has("data")) {
-  try {
-    const data = JSON.parse(decodeURIComponent(urlParams.get("data")));
-    players = data.players || [];
-    results = data.results || {};
-    punishments = data.punishments || {};
-    currentMatch = data.currentMatch || 1;
-    setupDiv.style.display = "none";
-    rouletteDiv.style.display = "flex";
-    updatePlayerDisplay();
-    localStorage.setItem("results", JSON.stringify(results));
-    localStorage.setItem("punishments", JSON.stringify(punishments));
-  } catch (e) {
-    alert("共有データの読み込みに失敗しました。");
-  }
-} else {
-  window.onload = () => {
+// 🌐 URLに ?data= がある場合 → データ読み込み＋URLリセット
+window.addEventListener("load", () => {
+  const url = new URL(window.location.href);
+  const dataParam = url.searchParams.get("data");
+
+  if (dataParam) {
+    try {
+      const decoded = decodeURIComponent(dataParam);
+      const data = JSON.parse(decoded);
+      players = data.players || [];
+      results = data.results || {};
+      punishments = data.punishments || {};
+      currentMatch = data.currentMatch || 1;
+
+      localStorage.setItem("results", JSON.stringify(results));
+      localStorage.setItem("punishments", JSON.stringify(punishments));
+      localStorage.setItem("currentMatch", currentMatch);
+      localStorage.setItem("players", JSON.stringify(players));
+
+      console.log("✅ URLデータを読み込みました。");
+
+      setupDiv.style.display = "none";
+      rouletteDiv.style.display = "flex";
+      updatePlayerDisplay();
+
+      // URLリセット（?data削除）
+      url.searchParams.delete("data");
+      window.history.replaceState({}, document.title, url.pathname);
+    } catch (err) {
+      console.error("⚠️ データ読み込み失敗:", err);
+      alert("URLデータの読み込みに失敗しました。");
+    }
+  } else {
     if (localStorage.getItem("results")) {
       if (confirm("保存データがあります。破棄しますか？")) {
         localStorage.clear();
       }
     }
     setupDiv.style.display = "flex";
-  };
-}
+  }
+});
 
 // 人数入力後の名前入力
 document.getElementById("setPlayers").onclick = () => {
@@ -165,26 +181,22 @@ shuffleBtn.onclick = async () => {
   const name = players[currentPlayerIndex];
   const key = `試合${currentMatch}`;
   const txt_rei = "例: 一週間で5kg痩せる";
-  const weapon2 = "自由な武器";
   results[key] = results[key] || {};
+
   if (results[key][name]) {
     let punishmentText;
-    // --- 入力チェック付き prompt ---
     while (true) {
       punishmentText = prompt("罰ゲームは？", txt_rei);
-      // キャンセルした場合は終了
       if (punishmentText === null) return;
-      // 入力が空欄、または例文のままのとき
       if (punishmentText.trim() === "" || punishmentText === txt_rei) {
         alert("入力してください。");
-        continue; // もう一度promptを表示
+        continue;
       }
-      // 有効な入力ができたらループを抜ける
       break;
     }
-    // --- ルーレット演出と結果登録 ---
     await spinRoulette(2000);
     const weapon1 = weapons[Math.floor(Math.random() * weapons.length)];
+    const weapon2 = "自由な武器";
     results[key][name] = `${weapon1}, ${weapon2} (罰ゲーム：${punishmentText})`;
     punishments[name] = punishments[name] || [];
     punishments[name].push(`試合${currentMatch}：${punishmentText}`);
@@ -195,24 +207,27 @@ shuffleBtn.onclick = async () => {
     results[key][name] = `${weapon1}, ${weapon2}`;
   }
 
-  // --- 保存処理 ---
   localStorage.setItem("results", JSON.stringify(results));
   localStorage.setItem("punishments", JSON.stringify(punishments));
   resultDiv.textContent = `${name} の結果：${results[key][name]}`;
-  nextPlayerBtn.style.display = "inline-block";
+
+  if (currentPlayerIndex < players.length - 1) {
+    nextPlayerBtn.style.display = "inline-block";
+    nextMatchBtn.style.display = "none";
+  } else {
+    nextPlayerBtn.style.display = "none";
+    nextMatchBtn.style.display = "inline-block";
+  }
 };
 
-
-// 🎞 ルーレット演出関数
+// 🎞 ルーレット演出
 function spinRoulette(duration = 2000) {
   return new Promise(resolve => {
     shuffleBtn.disabled = true;
-    let count = 0;
     const interval = setInterval(() => {
       const w1 = weapons[Math.floor(Math.random() * weapons.length)];
       const w2 = weapons[Math.floor(Math.random() * weapons.length)];
       resultDiv.textContent = `🔄 ${w1}, ${w2}`;
-      count += 100;
     }, 100);
     setTimeout(() => {
       clearInterval(interval);
@@ -222,7 +237,7 @@ function spinRoulette(duration = 2000) {
   });
 }
 
-// 次のプレイヤーへ
+// 次のプレイヤー
 nextPlayerBtn.onclick = () => {
   currentPlayerIndex++;
   if (currentPlayerIndex >= players.length) {
@@ -235,7 +250,7 @@ nextPlayerBtn.onclick = () => {
   }
 };
 
-// 次の試合へ
+// 次の試合
 nextMatchBtn.onclick = () => {
   currentMatch++;
   currentPlayerIndex = 0;
@@ -244,23 +259,19 @@ nextMatchBtn.onclick = () => {
   updatePlayerDisplay();
 };
 
-// 結果一覧表示
+// 結果一覧
 viewResultBtn.onclick = () => {
   rouletteDiv.style.display = "none";
   allResultsDiv.style.display = "flex";
   resultsContainer.innerHTML = "";
   let colorIndex = 0;
-
   for (const [match, playersData] of Object.entries(results)) {
     const box = document.createElement("div");
     box.className = "resultBox";
-    box.style.background = bgColors[colorIndex % bgColors.length];
-    colorIndex++;
-
+    box.style.background = bgColors[colorIndex++ % bgColors.length];
     const h3 = document.createElement("h3");
     h3.textContent = match;
     box.appendChild(h3);
-
     for (const [name, result] of Object.entries(playersData)) {
       const p = document.createElement("p");
       p.textContent = `👤 ${name} 🔫 ${result}`;
@@ -270,23 +281,19 @@ viewResultBtn.onclick = () => {
   }
 };
 
-// 罰ゲーム一覧表示
+// 罰ゲーム一覧
 showPunishmentsBtn.onclick = () => {
   rouletteDiv.style.display = "none";
   punishmentsDiv.style.display = "flex";
   punishmentsContent.innerHTML = "";
   let colorIndex = 0;
-
   for (const [name, list] of Object.entries(punishments)) {
     const box = document.createElement("div");
     box.className = "resultBox";
-    box.style.background = bgColors[colorIndex % bgColors.length];
-    colorIndex++;
-
+    box.style.background = bgColors[colorIndex++ % bgColors.length];
     const h3 = document.createElement("h3");
     h3.textContent = name;
     box.appendChild(h3);
-
     list.forEach(item => {
       const p = document.createElement("p");
       p.textContent = item;
@@ -296,26 +303,19 @@ showPunishmentsBtn.onclick = () => {
   }
 };
 
-// 戻るボタン
+// 閉じるボタン
 backBtn.onclick = () => {
   allResultsDiv.style.display = "none";
   rouletteDiv.style.display = "flex";
 };
-
-// 罰ゲーム閉じる
 closePunishmentsBtn.onclick = () => {
   punishmentsDiv.style.display = "none";
   rouletteDiv.style.display = "flex";
 };
 
-// 🔗 結果をURLで共有
+// 🔗 結果を共有
 shareBtn.onclick = () => {
-  const data = {
-    players,
-    results,
-    punishments,
-    currentMatch
-  };
+  const data = { players, results, punishments, currentMatch };
   const encoded = encodeURIComponent(JSON.stringify(data));
   const url = `${location.origin}${location.pathname}?data=${encoded}`;
   navigator.clipboard.writeText(url)
@@ -331,5 +331,7 @@ function updatePlayerDisplay() {
 </script>
 </body>
 </html>
+
+
 
 
