@@ -102,6 +102,7 @@ let results = JSON.parse(localStorage.getItem("results")) || {};
 let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 
 // 🌐 URLに ?data= がある場合 → データ読み込み＋URLリセット
+// 🌐 URLに ?data= がある場合 → データ読み込み＋URLリセット
 window.addEventListener("load", () => {
   const url = new URL(window.location.href);
   const dataParam = url.searchParams.get("data");
@@ -110,11 +111,14 @@ window.addEventListener("load", () => {
     try {
       const decoded = decodeURIComponent(dataParam);
       const data = JSON.parse(decoded);
+
+      // データを反映
       players = data.players || [];
       results = data.results || {};
       punishments = data.punishments || {};
       currentMatch = data.currentMatch || 1;
 
+      // 保存
       localStorage.setItem("results", JSON.stringify(results));
       localStorage.setItem("punishments", JSON.stringify(punishments));
       localStorage.setItem("currentMatch", currentMatch);
@@ -122,24 +126,41 @@ window.addEventListener("load", () => {
 
       console.log("✅ URLデータを読み込みました。");
 
+      // 表示更新
       setupDiv.style.display = "none";
       rouletteDiv.style.display = "flex";
       updatePlayerDisplay();
 
-      // URLリセット（?data削除）
+      // URLリセット（?dataを削除）
       url.searchParams.delete("data");
       window.history.replaceState({}, document.title, url.pathname);
+
     } catch (err) {
       console.error("⚠️ データ読み込み失敗:", err);
       alert("URLデータの読み込みに失敗しました。");
     }
   } else {
+    // 通常起動時：保存データがあるか確認
     if (localStorage.getItem("results")) {
-      if (confirm("保存データがあります。破棄しますか？")) {
+      const keep = confirm("保存データがあります。破棄しますか？");
+      if (keep) {
+        // ✅ 「はい」→破棄して最初から
         localStorage.clear();
+        setupDiv.style.display = "flex";
+      } else {
+        // ❌ 「いいえ」→保存データを使って再開
+        players = JSON.parse(localStorage.getItem("players")) || [];
+        results = JSON.parse(localStorage.getItem("results")) || {};
+        punishments = JSON.parse(localStorage.getItem("punishments")) || {};
+        currentMatch = parseInt(localStorage.getItem("currentMatch")) || 1;
+
+        setupDiv.style.display = "none";
+        rouletteDiv.style.display = "flex";
+        updatePlayerDisplay();
       }
+    } else {
+      setupDiv.style.display = "flex";
     }
-    setupDiv.style.display = "flex";
   }
 });
 
@@ -342,6 +363,7 @@ function updatePlayerDisplay() {
 </script>
 </body>
 </html>
+
 
 
 
