@@ -21,7 +21,7 @@ const weapons3 = [
 ];
 //アイコン
 function updateFavicon() {
-  const modeLabel = getModeLabel(); // "通常" / "団体" / "メンスト"
+  const modeLabel = currentMode === "squad" ? "団体" : currentMode === "mensto" ? "メンスト" : "通常"; // "通常" / "団体" / "メンスト"
   const favicon = document.querySelector("link[rel='icon']");
 
   // モードごとのアイコンURL
