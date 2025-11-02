@@ -27,8 +27,8 @@ function updateFavicon() {
   // モードごとのアイコンURL
   const iconMap = {
     "通常": "./images/wb8ioTqw_400x400.jpg",  // ← ここを変更
-    "団体": "https://akaina0112.github.io/icon_team.png",
-    "メンスト": "https://akaina0112.github.io/icon_mensto.png"
+    "団体": "./images/dt.jpg",
+    "メンスト": "./images/me.jpg"
   };
 
   if (favicon && iconMap[modeLabel]) {
