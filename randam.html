@@ -97,7 +97,6 @@ const punishmentsContent = document.getElementById("punishmentsContent");
 const backBtn = document.getElementById("backBtn");
 const closePunishmentsBtn = document.getElementById("closePunishmentsBtn");
 const shareBtn = document.getElementById("shareBtn");
-//const resetBtn = document.getElementById("resetBtn");
 const modeSelect = document.getElementById("modeSelect");
 const titleText = document.getElementById("titleText");
 
@@ -111,94 +110,47 @@ let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 let currentMode = localStorage.getItem("currentMode") || "normal";
 
 // 🌐 URLデータ読み込み
-window.addEventListener("DOMContentLoaded", () => {
+// ---------- ✅ 初期表示 & URL復元ロジック + 既存データ確認 ----------
+window.onload = () => {
   const url = new URL(window.location.href);
   const dataParam = url.searchParams.get("data");
 
   if (dataParam) {
     try {
-      const decoded = decodeURIComponent(dataParam);
-      const data = JSON.parse(decoded);
+      const data = JSON.parse(decodeURIComponent(dataParam));
       players = data.players || [];
       results = data.results || {};
       punishments = data.punishments || {};
       currentMatch = data.currentMatch || 1;
-      currentMode = data.currentMode || "normal";
-
       localStorage.setItem("players", JSON.stringify(players));
       localStorage.setItem("results", JSON.stringify(results));
       localStorage.setItem("punishments", JSON.stringify(punishments));
       localStorage.setItem("currentMatch", currentMatch);
-      localStorage.setItem("currentMode", currentMode);
-
       setupDiv.style.display = "none";
       rouletteDiv.style.display = "flex";
       updatePlayerDisplay();
-      updateTitle();
-
       url.searchParams.delete("data");
       window.history.replaceState({}, document.title, url.pathname);
+      return;
     } catch {
       alert("URLデータ読み込み失敗");
     }
-  } 
-  else if (localStorage.getItem("results")) {
-    if (confirm("保存データがあります。破棄しますか？")) {
+  }
+
+  if (localStorage.getItem("results")) {
+    if (confirm("前回のデータがあります。リセットしますか？")) {
       localStorage.clear();
-      setupDiv.style.display = "flex";
+      location.reload(); // ✅完全初期化
+      return;
     } else {
       players = JSON.parse(localStorage.getItem("players")) || [];
       results = JSON.parse(localStorage.getItem("results")) || {};
       punishments = JSON.parse(localStorage.getItem("punishments")) || {};
       currentMatch = parseInt(localStorage.getItem("currentMatch")) || 1;
-      currentMode = localStorage.getItem("currentMode") || "normal";
-
       setupDiv.style.display = "none";
-      rouletteDiv.style.display = "flex";
-      updatePlayerDisplay();
-      updateTitle();
     }
-  } 
-  else {
+  } else {
     setupDiv.style.display = "flex";
-  }
-
-/*
-  // ✅ リセットボタン処理（ここに入れる）
-  resetBtn.onclick = () => {
-    if (confirm("リセットしますか？保存データが全て消えます。")) {
-      localStorage.removeItem("players");
-      localStorage.removeItem("results");
-      localStorage.removeItem("punishments");
-      localStorage.removeItem("currentMatch");
-      localStorage.removeItem("currentMode");
-
-      players = [];
-      results = {};
-      punishments = {};
-      currentMatch = 1;
-      currentPlayerIndex = 0;
-
-      location.reload(); // ←完全初期化
-    }
-  };
-});
-
-// 🔹 リセットボタン
-resetBtn.onclick = () => {
-  if(confirm("リセットしますか？保存データが全て消えます。")) {
-    localStorage.removeItem("players");
-    localStorage.removeItem("results");
-    localStorage.removeItem("punishments");
-    localStorage.removeItem("currentMatch");
-    localStorage.removeItem("currentMode");
-    players = [];
-    results = {};
-    punishments = {};
-    currentMatch = 1;
-    currentPlayerIndex = 0;
-    setupDiv.style.display = "flex";
-    rouletteDiv.style.display = "none";
   }
 };
 
@@ -362,6 +314,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
