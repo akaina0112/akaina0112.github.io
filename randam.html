@@ -126,6 +126,7 @@ window.onload = () => {
       localStorage.setItem("results", JSON.stringify(results));
       localStorage.setItem("punishments", JSON.stringify(punishments));
       localStorage.setItem("currentMatch", currentMatch);
+      console.log("✅ 保存データ:", {players, results, punishments, currentMatch});
       setupDiv.style.display = "none";
       rouletteDiv.style.display = "flex";
       updatePlayerDisplay();
@@ -224,6 +225,7 @@ shuffleBtn.onclick=async()=>{
   }
   localStorage.setItem("results",JSON.stringify(results));
   localStorage.setItem("punishments",JSON.stringify(punishments));
+ 　console.log("✅ 保存データ:", {players, results, punishments, currentMatch});
   resultDiv.textContent=`${name} の結果：${results[key][name]}`;
   if(currentPlayerIndex<players.length-1){nextPlayerBtn.style.display="inline-block";nextMatchBtn.style.display="none";}
   else{nextPlayerBtn.style.display="none";nextMatchBtn.style.display="inline-block";}
@@ -314,6 +316,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
