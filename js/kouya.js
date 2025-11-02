@@ -21,18 +21,21 @@ const weapons3 = [
 ];
 
 //アイコン
+// アイコン更新関数
 function updateFavicon() {
-  const modeLabel = currentMode === "squad" ? "団体" : currentMode === "mensto" ? "メンスト" : "通常"; // "通常" / "団体" / "メンスト"
+  const modeLabel = { squad: "団体", mensto: "メンスト" }[currentMode] || "通常"; // モード名簡略版
   const favicon = document.querySelector("link[rel='icon']");
+  const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
 
   // モードごとのアイコンURL
   const iconMap = {
-    "通常": "./images/wb8ioTqw_400x400.jpg",  // ← ここを変更
+    "通常": "./images/wb8ioTqw_400x400.jpg",
     "団体": "./images/dt.jpg",
     "メンスト": "./images/me.jpg"
   };
 
-  if (favicon && iconMap[modeLabel]) {
-    favicon.href = iconMap[modeLabel];
+  if (iconMap[modeLabel]) {
+    if (favicon) favicon.href = iconMap[modeLabel];
+    if (appleIcon) appleIcon.href = iconMap[modeLabel];
   }
 }
