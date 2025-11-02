@@ -74,7 +74,7 @@ input, select {font-size: 18px;margin: 5px;padding: 8px;}
   <h2>🎯 罰ゲーム一覧</h2>
   <div id="punishmentsContent"></div>
   <button id="closePunishmentsBtn">× 閉じる</button>
-  <button id="saveResultsBtn">結果をPNGで保存 📷</button>
+  <button id="saveResultsBtn2">結果をPNGで保存 📷</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="./js/kouya.js"></script>
@@ -102,6 +102,7 @@ const shareBtn = document.getElementById("shareBtn");
 const modeSelect = document.getElementById("modeSelect");
 const titleText = document.getElementById("titleText");
 const saveResultsBtn = document.getElementById("saveResultsBtn");
+const saveResultsBtn2 = document.getElementById("saveResultsBt2");
 
 const bgColors = ["#fff", "#f9f0f0", "#f0f9f9", "#f0f0f9", "#f9f9f0", "#f8f0f8", "#f0f8f0", "#f8f8f0", "#f0f0f8"];
 
@@ -328,29 +329,69 @@ shareBtn.onclick=()=>{
 };
 
 saveResultsBtn.onclick = () => {
-  let targetDiv;
-  let fileName = "荒野行動_縛りルーレット結果.png";
+  if (allResultsDiv.style.display === "none") return alert("結果一覧を表示してください");
 
-  // 表示されている親 div をキャプチャ対象にする
-  if (allResultsDiv.style.display !== "none") {
-    targetDiv = allResultsDiv;
-  } else if (punishmentsDiv.style.display !== "none") {
-    targetDiv = punishmentsDiv;
-  } else {
-    return alert("保存対象がありません");
-  }
+  const container = resultsContainer;
 
-  // html2canvas でキャプチャ
-  html2canvas(targetDiv, {scale: 2}).then(canvas => {
+  // 元の高さを保存
+  const originalHeight = container.style.height;
+  const originalOverflow = container.style.overflow;
+
+  // スクロール全体を表示するように一時調整
+  container.style.height = container.scrollHeight + "px";
+  container.style.overflow = "visible";
+
+  html2canvas(container, {scale: 2}).then(canvas => {
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
-    link.download = fileName;
+    link.download = "荒野行動_縛りルーレット結果.png";
     link.click();
+
+    // 元に戻す
+    container.style.height = originalHeight;
+    container.style.overflow = originalOverflow;
   }).catch(err => {
     console.error("PNG保存失敗:", err);
     alert("PNG保存に失敗しました。");
+    
+    // 元に戻す
+    container.style.height = originalHeight;
+    container.style.overflow = originalOverflow;
   });
 };
+
+saveResultsBtn2.onclick = () => {
+  if (allResultsDiv.style.display === "none") return alert("結果一覧を表示してください");
+
+  const container = resultsContainer;
+
+  // 元の高さを保存
+  const originalHeight = container.style.height;
+  const originalOverflow = container.style.overflow;
+
+  // スクロール全体を表示するように一時調整
+  container.style.height = container.scrollHeight + "px";
+  container.style.overflow = "visible";
+
+  html2canvas(container, {scale: 2}).then(canvas => {
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = "荒野行動_縛りルーレット結果(罰ゲーム).png";
+    link.click();
+
+    // 元に戻す
+    container.style.height = originalHeight;
+    container.style.overflow = originalOverflow;
+  }).catch(err => {
+    console.error("PNG保存失敗:", err);
+    alert("PNG保存に失敗しました。");
+    
+    // 元に戻す
+    container.style.height = originalHeight;
+    container.style.overflow = originalOverflow;
+  });
+};
+
 
 
 function getModeLabel(){if(currentMode==="squad")return"団体";if(currentMode==="mensto")return"メンスト";return"通常";}
@@ -374,6 +415,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
