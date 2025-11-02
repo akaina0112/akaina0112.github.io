@@ -19,3 +19,19 @@ const weapons3 = [
  "AWM","CS","AMR-83","M24","爆裂弓","SVD",
  "M860","M88C","SK12"
 ];
+//アイコン
+function updateFavicon() {
+  const modeLabel = getModeLabel(); // "通常" / "団体" / "メンスト"
+  const favicon = document.querySelector("link[rel='icon']");
+
+  // モードごとのアイコンURL
+  const iconMap = {
+    "通常": "https://akaina0112.github.io/icon_normal.png",
+    "団体": "https://akaina0112.github.io/icon_team.png",
+    "メンスト": "https://akaina0112.github.io/icon_mensto.png"
+  };
+
+  if (favicon && iconMap[modeLabel]) {
+    favicon.href = iconMap[modeLabel];
+  }
+}
