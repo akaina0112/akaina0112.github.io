@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>荒野行動 縛りルーレット</title>
+<title>荒野行動 縛りルーレット（通常）</title>
 
 <style>
 html, body {height: 100%;margin: 0;font-family: Arial, sans-serif;background: #f2f2f2;}
-#setup, #roulette, #allResults, #punishmentsContainer {display: none;flex-direction: column;justify-content: center;align-items: center;height: 100vh;}
+#setup {display: flex;flex-direction: column;justify-content: center;align-items: center;height: 100vh;}
+#roulette, #allResults, #punishmentsContainer {display: none;flex-direction: column;justify-content: center;align-items: center;height: 100vh;}
 #result {font-size: 6vw;text-align: center;padding: 20px;background: #fff;border-radius: 10px;margin-bottom: 20px;box-shadow: 0 4px 8px rgba(0,0,0,0.15);}
 button {font-size: 18px;padding: 12px 25px;margin: 10px;cursor: pointer;border: none;border-radius: 6px;background: #4CAF50;color: white;}
 button:hover {background: #45a049;}
@@ -94,19 +95,8 @@ const shareBtn = document.getElementById("shareBtn");
 const modeSelect = document.getElementById("modeSelect");
 const titleText = document.getElementById("titleText");
 
-const weapons=[
- "95式","G36C","AR18(89式)","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X","ADS","APS",
- "Dual TMP","UZI","MK5","MP5","PP2000","05式","トンプソン","P90",
- "LSR-8","AWM","CS","AMR-83","Kar98k","M24","ゴールデンクマ","M1891","爆裂弓","SVD","Val","88式","56式","クロスボウ",
- "M860","M88C","SK12",
- "ガトリングガン","MK60","95式軽機関銃"
-];
-const weapons2 = [
- "95式","G36C","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X",
- "Dual TMP","UZI","MK5","MP5","PP2000","05式","P90",
- "AWM","CS","AMR-83","M24","爆裂弓","SVD",
- "M860","M88C","SK12"
-];
+const weapons = ["95式","G36C","AR18(89式)","M4A1","M4A4","SCAR-L","AK-47","M27","81式","AK14"];
+const weapons2 = ["SVD","CS","M860","M88C","SK12","爆裂弓","クロスボウ"];
 const weapons3 = ["P90","MP5","05式","UZI","MK5","トンプソン","Dual TMP"];
 const bgColors = ["#fff", "#f9f0f0", "#f0f9f9", "#f0f0f9", "#f9f9f0", "#f8f0f8", "#f0f8f0", "#f8f8f0", "#f0f0f8"];
 
@@ -117,38 +107,8 @@ let results = JSON.parse(localStorage.getItem("results")) || {};
 let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 let currentMode = localStorage.getItem("currentMode") || "normal";
 
-// URLパラメータ処理
-const urlParams = new URLSearchParams(location.search);
-if (urlParams.has("data")) {
-  try {
-    const data = JSON.parse(decodeURIComponent(urlParams.get("data")));
-    players = data.players || [];
-    results = data.results || {};
-    punishments = data.punishments || {};
-    currentMatch = data.currentMatch || 1;
-    currentMode = data.currentMode || "normal";
-    modeSelect.value = currentMode;
-    setupDiv.style.display = "none";
-    rouletteDiv.style.display = "flex";
-    updatePlayerDisplay();
-    updateTitle();
-    localStorage.setItem("results", JSON.stringify(results));
-    localStorage.setItem("punishments", JSON.stringify(punishments));
-    localStorage.setItem("currentMode", currentMode);
-    history.replaceState(null, "", location.origin + location.pathname);
-  } catch (e) {
-    alert("共有データの読み込みに失敗しました。");
-  }
-} else {
-  window.onload = () => {
-    if (localStorage.getItem("results")) {
-      if (confirm("保存データがあります。破棄しますか？")) {
-        localStorage.clear();
-      }
-    }
-    setupDiv.style.display = "flex";
-  };
-}
+// GitHub Pages対応：初期表示を強制
+setupDiv.style.display = "flex";
 
 // 人数入力後の名前入力
 document.getElementById("setPlayers").onclick = () => {
@@ -184,7 +144,7 @@ startBtn.onclick = () => {
   updateTitle();
 };
 
-// モード変更処理
+// モード変更
 modeSelect.addEventListener("change", () => {
   currentMode = modeSelect.value;
   localStorage.setItem("currentMode", currentMode);
@@ -197,7 +157,7 @@ function getWeaponList() {
   return weapons;
 }
 
-// 🎲 ルーレット演出付きボタン
+// 🎲 ルーレット
 shuffleBtn.onclick = async () => {
   const name = players[currentPlayerIndex];
   const key = `試合${currentMatch}`;
@@ -223,6 +183,7 @@ shuffleBtn.onclick = async () => {
 
   localStorage.setItem("results", JSON.stringify(results));
   localStorage.setItem("punishments", JSON.stringify(punishments));
+
   resultDiv.textContent = `${name} の結果：${results[key][name]}`;
   nextPlayerBtn.style.display = "inline-block";
 };
@@ -359,4 +320,3 @@ function updatePlayerDisplay() {
 </script>
 </body>
 </html>
-
