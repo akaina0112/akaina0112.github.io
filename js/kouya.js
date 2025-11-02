@@ -19,6 +19,7 @@ const weapons3 = [
  "AWM","CS","AMR-83","M24","爆裂弓","SVD",
  "M860","M88C","SK12"
 ];
+
 //アイコン
 function updateFavicon() {
   const modeLabel = currentMode === "squad" ? "団体" : currentMode === "mensto" ? "メンスト" : "通常"; // "通常" / "団体" / "メンスト"
