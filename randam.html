@@ -406,7 +406,7 @@ saveResultsBtn2.onclick = () => {
 
 function getModeLabel(){updateFavicon(); updateTitle();if(currentMode==="squad")return"団体";if(currentMode==="mensto")return"メンスト";return"通常";}
 function updateTitle() {
-  const modeLabel = getModeLabel(); // "通常" / "団体" / "メンスト"
+  const modeLabel = currentMode === "squad" ? "団体" : currentMode === "mensto" ? "メンスト" : "通常"; // "通常" / "団体" / "メンスト"
   // タイトルを更新
   titleText.textContent = `🎯 荒野行動 縛りルーレット（${modeLabel}）`;
   document.title = `荒野行動 縛りルーレット（${modeLabel}）`;
@@ -426,6 +426,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
