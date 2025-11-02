@@ -142,6 +142,7 @@ window.onload = () => {
     if (confirm("前回のデータがあります。リセットしますか？")) {
       localStorage.clear();
       location.reload(); // ✅完全初期化
+      console.log("✅ 保存データ:", {players, results, punishments, currentMatch});
       return;
     } else {
       players = JSON.parse(localStorage.getItem("players")) || [];
@@ -316,6 +317,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
