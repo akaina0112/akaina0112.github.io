@@ -175,18 +175,31 @@ function setPlayerInputs() {
   startBtn.style.display="block";
 }
 
+//決定ボタン
 startBtn.onclick = () => {
-  players=[];
-  for(let i=0;i<parseInt(playerCountInput.value);i++){
-    const val=document.getElementById(`player${i}`).value.trim();
-    if(!val){alert("全員の名前を入力してください。");return;}
+  players = [];
+  const enteredNames = [];
+  
+  for (let i = 0; i < parseInt(playerCountInput.value); i++) {
+    const val = document.getElementById(`player${i}`).value.trim();
+    if (!val) {
+      alert("全員の名前を入力してください。");
+      return;
+    }
+    if (enteredNames.includes(val)) {
+      alert("同じ名前は使えません。全員別の名前を入力してください。");
+      return;
+    }
+    enteredNames.push(val);
     players.push(val);
   }
-  setupDiv.style.display="none";
-  rouletteDiv.style.display="flex";
+
+  setupDiv.style.display = "none";
+  rouletteDiv.style.display = "flex";
   updatePlayerDisplay();
   updateTitle();
 };
+
 
 modeSelect.addEventListener("change",()=>{
   currentMode=modeSelect.value;
@@ -317,6 +330,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
