@@ -111,9 +111,10 @@ let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 let currentMode = localStorage.getItem("currentMode") || "normal";
 
 // 🌐 URLデータ読み込み
-window.addEventListener("load", () => {
+window.addEventListener("DOMContentLoaded", () => {
   const url = new URL(window.location.href);
   const dataParam = url.searchParams.get("data");
+
   if (dataParam) {
     try {
       const decoded = decodeURIComponent(dataParam);
@@ -140,8 +141,9 @@ window.addEventListener("load", () => {
     } catch {
       alert("URLデータ読み込み失敗");
     }
-  } else if (localStorage.getItem("results")) {
-    if(confirm("保存データがあります。破棄しますか？")) {
+  } 
+  else if (localStorage.getItem("results")) {
+    if (confirm("保存データがあります。破棄しますか？")) {
       localStorage.clear();
       setupDiv.style.display = "flex";
     } else {
@@ -156,10 +158,31 @@ window.addEventListener("load", () => {
       updatePlayerDisplay();
       updateTitle();
     }
-  } else {
+  } 
+  else {
     setupDiv.style.display = "flex";
   }
+
+  // ✅ リセットボタン処理（ここに入れる）
+  resetBtn.onclick = () => {
+    if (confirm("リセットしますか？保存データが全て消えます。")) {
+      localStorage.removeItem("players");
+      localStorage.removeItem("results");
+      localStorage.removeItem("punishments");
+      localStorage.removeItem("currentMatch");
+      localStorage.removeItem("currentMode");
+
+      players = [];
+      results = {};
+      punishments = {};
+      currentMatch = 1;
+      currentPlayerIndex = 0;
+
+      location.reload(); // ←完全初期化
+    }
+  };
 });
+
 /*
 // 🔹 リセットボタン
 resetBtn.onclick = () => {
@@ -339,6 +362,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
