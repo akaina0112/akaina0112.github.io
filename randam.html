@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>荒野行動 縛りルーレット</title>
 <meta name="description" content="荒野行動用縛りルーレット。プレイヤー人数を入力して、武器や縛りルールを自動で決定。結果は保存・共有可能。">
+<!-- ✅ ホーム画面バーやブラウザUIの色 -->
+<meta name="theme-color" content="#4caf50">
+<!-- ✅ iOS 用のホーム追加設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="荒野ルーレット">
 
+<!-- ✅ Android 用のホーム追加設定 -->
+<meta name="application-name" content="荒野ルーレット">
 
   
 <style>
@@ -408,10 +416,12 @@ saveResultsBtn2.onclick = () => {
 function getModeLabel(){updateFavicon(); updateTitle();if(currentMode==="squad")return"団体";if(currentMode==="mensto")return"メンスト";return"通常";}
 function updateTitle() {
   const modeLabel = currentMode === "squad" ? "団体" : currentMode === "mensto" ? "メンスト" : "通常"; // "通常" / "団体" / "メンスト"
+
   // タイトルを更新
-  titleText.textContent = `🎯 荒野行動 縛りルーレット（${modeLabel}）`;
-  document.title = `荒野行動 縛りルーレット（${modeLabel}）`;
-  
+  const title = `🎯 荒野行動 縛りルーレット（${modeLabel}）`;
+  titleText.textContent = title;
+  document.title = title;
+
   // description を更新
   const metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) {
@@ -420,6 +430,14 @@ function updateTitle() {
       `荒野行動用縛りルーレットサイト（${modeLabel}モード）。プレイヤー人数を入力して、武器や縛りルールを自動で決定。結果は保存・共有可能。`
     );
   }
+
+  // ホーム追加・アプリ名系メタタグ更新
+  const metaAppTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+  const metaAppName = document.querySelector('meta[name="application-name"]');
+  const appTitle = `荒野ルーレット（${modeLabel}）`;
+
+  if (metaAppTitle) metaAppTitle.setAttribute("content", appTitle);
+  if (metaAppName) metaAppName.setAttribute("content", appTitle);
 }
 
 
@@ -427,6 +445,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
