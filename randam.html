@@ -97,7 +97,7 @@ const punishmentsContent = document.getElementById("punishmentsContent");
 const backBtn = document.getElementById("backBtn");
 const closePunishmentsBtn = document.getElementById("closePunishmentsBtn");
 const shareBtn = document.getElementById("shareBtn");
-const resetBtn = document.getElementById("resetBtn");
+//const resetBtn = document.getElementById("resetBtn");
 const modeSelect = document.getElementById("modeSelect");
 const titleText = document.getElementById("titleText");
 
@@ -160,7 +160,7 @@ window.addEventListener("load", () => {
     setupDiv.style.display = "flex";
   }
 });
-
+/*
 // 🔹 リセットボタン
 resetBtn.onclick = () => {
   if(confirm("リセットしますか？保存データが全て消えます。")) {
@@ -197,7 +197,7 @@ function setPlayerInputs() {
   }
   startBtn.style.display="block";
 }
-
+*/
 startBtn.onclick = () => {
   players=[];
   for(let i=0;i<parseInt(playerCountInput.value);i++){
@@ -339,5 +339,6 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
