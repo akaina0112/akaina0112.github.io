@@ -59,7 +59,6 @@ input, select {font-size: 18px;margin: 5px;padding: 8px;}
   <button id="viewResultBtn">結果一覧を見る 📋</button>
   <button id="showPunishmentsBtn">罰ゲーム一覧を見る 🎯</button>
   <button id="shareBtn">結果を共有する 🔗</button>
-  <button id="saveResultsBtn">結果をPNGで保存 📷</button>
 </div>
 
 <!-- 結果一覧 -->
@@ -67,6 +66,7 @@ input, select {font-size: 18px;margin: 5px;padding: 8px;}
   <h2>📋 結果一覧</h2>
   <div id="resultsContainer"></div>
   <button id="backBtn">× 閉じる</button>
+  <button id="saveResultsBtn">結果をPNGで保存 📷</button>
 </div>
 
 <!-- 罰ゲーム一覧 -->
@@ -74,6 +74,7 @@ input, select {font-size: 18px;margin: 5px;padding: 8px;}
   <h2>🎯 罰ゲーム一覧</h2>
   <div id="punishmentsContent"></div>
   <button id="closePunishmentsBtn">× 閉じる</button>
+  <button id="saveResultsBtn">結果をPNGで保存 📷</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="./js/kouya.js"></script>
@@ -327,19 +328,30 @@ shareBtn.onclick=()=>{
 };
 
 saveResultsBtn.onclick = () => {
-  // 保存対象は「結果一覧」か「罰ゲーム一覧」どちらかを表示している div
   let targetDiv;
-  if (allResultsDiv.style.display !== "none") targetDiv = resultsContainer;
-  else if (punishmentsDiv.style.display !== "none") targetDiv = punishmentsContent;
-  else return alert("保存対象がありません");
+  let fileName = "荒野行動_縛りルーレット結果.png";
 
-  html2canvas(targetDiv).then(canvas => {
+  // 表示されている親 div をキャプチャ対象にする
+  if (allResultsDiv.style.display !== "none") {
+    targetDiv = allResultsDiv;
+  } else if (punishmentsDiv.style.display !== "none") {
+    targetDiv = punishmentsDiv;
+  } else {
+    return alert("保存対象がありません");
+  }
+
+  // html2canvas でキャプチャ
+  html2canvas(targetDiv, {scale: 2}).then(canvas => {
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
-    link.download = "荒野行動 縛りルーレット結果.png"; // ファイル名
+    link.download = fileName;
     link.click();
+  }).catch(err => {
+    console.error("PNG保存失敗:", err);
+    alert("PNG保存に失敗しました。");
   });
 };
+
 
 function getModeLabel(){if(currentMode==="squad")return"団体";if(currentMode==="mensto")return"メンスト";return"通常";}
 function updateTitle() {
@@ -362,6 +374,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
