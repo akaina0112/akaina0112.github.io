@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AST-based JS Obfuscator (Browser)</title>
+<title>AST-based JS Obfuscator (Fixed)</title>
 <style>
   body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;margin:0;background:#071029;color:#d8eefc}
   .wrap{max-width:1100px;margin:20px auto;padding:18px}
@@ -19,8 +19,8 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>AST ベース JS 難読化（ブラウザ）</h1>
-    <p class="small">Acorn + Astring を使い、識別子の安全なリネーム、文字列テーブル化（XOR→Base64）、数値変換を行うデモ。複雑なコードはバックアップを取ってから。</p>
+    <h1>AST ベース JS 難読化（修正版）</h1>
+    <p class="small">Acorn + acorn-walk + Astring を使い、識別子の安全なリネーム、文字列テーブル化（XOR→Base64）、数値変換を行うデモ。複雑なコードはバックアップを取ってから。</p>
 
     <label>元コード（貼り付け）</label>
     <textarea id="src" placeholder="ここに JavaScript を貼り付け"></textarea>
@@ -53,181 +53,36 @@
     </footer>
   </div>
 
-  <!-- CDN: Acorn (parser) と astring (codegen) -->
+  <!-- CDN: acorn, acorn-walk, astring -->
   <script src="https://unpkg.com/acorn@8.8.2/dist/acorn.min.js"></script>
+  <script src="https://unpkg.com/acorn-walk@8.2.0/dist/walk.min.js"></script>
   <script src="https://unpkg.com/astring@1.8.1/dist/astring.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/acorn/dist/acorn.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/acorn-walk/dist/walk.min.js"></script>
 
   <script>
   // ---- ヘルパー ----
   function uid(len=6){ const chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; let s=''; for(let i=0;i<len;i++) s+=chars[Math.floor(Math.random()*chars.length)]; return s; }
   function isReservedGlobal(name){
-    const r = ['window','document','console','JSON','Math','Array','Object','String','Number','Boolean','Date','setTimeout','clearTimeout','setInterval','clearInterval','RegExp','Map','Set','WeakMap','WeakSet','Promise'];
+    const r = ['window','document','console','JSON','Math','Array','Object','String','Number','Boolean','Date','setTimeout','clearTimeout','setInterval','clearInterval','RegExp','Map','Set','WeakMap','WeakSet','Promise','require','module','exports'];
     return r.includes(name);
   }
 
-  // ---- スコープ追跡と識別子リネーム（簡易） ----
-  // 注意: これは簡易スコープ解析。function/var/let/const/params/blocks を扱いますが、完全なES全域のedgeは確認してください。
-  function buildScopes(ast){
-    // each scope: {parent, defs: Map(name->node), refs: Set(names)}
-    const scopes = [];
-    function pushScope(type,node){
-      const s = {type,parent: scopes.length?scopes[scopes.length-1]:null, defs:new Map(), refs:new Set(), node};
-      scopes.push(s); return s;
-    }
-    function popScope(){ return scopes.pop(); }
-    // traverse manually
-    const acornWalk = acorn.walk || window.acorn.walk;
-    if(!acornWalk){
-      // minimal walker fallback (we'll implement tiny recursive)
-      // but Acorn's walk might be available; try to use acorn.walk if present
-    }
-    // We'll use a small recursive walker tailored for function/class/blocks/variable declarations and identifiers
-    const globalScope = pushScope('global', ast);
-    function visit(node, parent){
-      if(!node) return;
-      switch(node.type){
-        case 'Program':
-        case 'BlockStatement':
-          if(node.type==='Program'){
-            // global already
-          } else {
-            // new block scope only for let/const in block - we still keep same representation but create child
-            pushScope('block', node);
-          }
-          for(const stmt of node.body) visit(stmt,node);
-          if(node.type!=='Program') popScope();
-          break;
-        case 'FunctionDeclaration':
-        case 'FunctionExpression':
-        case 'ArrowFunctionExpression': {
-          // function creates new scope (params + body)
-          const funcScope = pushScope('function', node);
-          // params
-          for(const p of node.params){
-            if(p.type==='Identifier') funcScope.defs.set(p.name,p);
-            // ignoring complex patterns for brevity
-          }
-          if(node.id && node.type==='FunctionDeclaration') {
-            // declaration binds in parent scope
-            scopes[scopes.length-2].defs.set(node.id.name, node);
-          }
-          visit(node.body,node);
-          popScope();
-          break;
-        }
-        case 'VariableDeclaration':
-          for(const decl of node.declarations){
-            if(decl.id && decl.id.type==='Identifier'){
-              // var binds to function or global scope; let/const to current scope
-              if(node.kind === 'var'){
-                // find nearest function or global scope
-                let i = scopes.length-1;
-                while(i>0 && scopes[i].type!=='function' && scopes[i].type!=='global') i--;
-                scopes[i].defs.set(decl.id.name, decl);
-              } else {
-                scopes[scopes.length-1].defs.set(decl.id.name, decl);
-              }
-            }
-            if(decl.init) visit(decl.init, node);
-          }
-          break;
-        case 'ClassDeclaration':
-          if(node.id) scopes[scopes.length-1].defs.set(node.id.name, node);
-          if(node.body) visit(node.body,node);
-          break;
-        case 'ExpressionStatement':
-          visit(node.expression,node);
-          break;
-        case 'CallExpression':
-          visit(node.callee,node);
-          for(const a of node.arguments) visit(a,node);
-          break;
-        case 'MemberExpression':
-          visit(node.object,node);
-          if(node.computed) visit(node.property,node);
-          break;
-        case 'Identifier':
-          // mark reference in current scope chain
-          let cur = scopes[scopes.length-1];
-          // avoid adding declaration identifiers (they were added earlier)
-          cur.refs.add(node.name);
-          break;
-        case 'ReturnStatement':
-          visit(node.argument,node);
-          break;
-        case 'IfStatement':
-          visit(node.test,node);
-          visit(node.consequent,node);
-          if(node.alternate) visit(node.alternate,node);
-          break;
-        case 'ForStatement':
-          if(node.init) visit(node.init,node);
-          if(node.test) visit(node.test,node);
-          if(node.update) visit(node.update,node);
-          visit(node.body,node);
-          break;
-        case 'WhileStatement':
-        case 'DoWhileStatement':
-          visit(node.test,node);
-          visit(node.body,node);
-          break;
-        case 'BinaryExpression':
-        case 'LogicalExpression':
-        case 'AssignmentExpression':
-          visit(node.left,node); visit(node.right,node);
-          break;
-        case 'ObjectExpression':
-          for(const p of node.properties){ visit(p.value || p, node); }
-          break;
-        case 'ArrayExpression':
-          for(const el of node.elements) if(el) visit(el,node);
-          break;
-        case 'TemplateLiteral':
-          for(const q of node.quasis) {/* strings */}
-          for(const e of node.expressions) visit(e,node);
-          break;
-        case 'VariableDeclarator':
-          if(node.id.type==='Identifier') scopes[scopes.length-1].defs.set(node.id.name,node);
-          if(node.init) visit(node.init,node);
-          break;
-        case 'ThrowStatement':
-          visit(node.argument,node);
-          break;
-        default:
-          // generic walk properties
-          for(const k in node){
-            if(!node.hasOwnProperty(k)) continue;
-            const v = node[k];
-            if(Array.isArray(v)){
-              for(const el of v) if(el && typeof el.type === 'string') visit(el,node);
-            } else if(v && typeof v.type === 'string'){
-              visit(v,node);
-            }
-          }
-      }
-    }
-    visit(ast,null);
-    return globalScope; // return top scope (structure accessible via closure)
-  }
-
-  // ---- AST walker (simple) to apply transforms ----
+  // ---- 汎用ウォーカー ----
+  // walkAndReplace: 深さ優先で AST を回す。コールバックが false を返すとそのノードの子は走査しない。
   function walkAndReplace(node, cb, parent=null, key=null, idx=null){
-    if(!node) return;
-    const result = cb(node, parent, key, idx);
-    if(result === false) return; // stop into children
+    if(!node || typeof node.type !== 'string') return;
+    const doChildren = cb(node, parent, key, idx);
+    if(doChildren === false) return;
     for(const k in node){
-      if(!node.hasOwnProperty(k)) continue;
+      if(!Object.prototype.hasOwnProperty.call(node,k)) continue;
       const v = node[k];
       if(Array.isArray(v)){
         for(let i=0;i<v.length;i++){
           const child = v[i];
-          if(child && typeof child.type==='string'){
+          if(child && typeof child.type === 'string'){
             walkAndReplace(child, cb, node, k, i);
           }
         }
-      } else if(v && typeof v.type==='string'){
+      } else if(v && typeof v.type === 'string'){
         walkAndReplace(v, cb, node, k, null);
       }
     }
@@ -237,17 +92,13 @@
   function obfuscateWithAST(code, opts){
     // parse
     const ast = acorn.parse(code, {ecmaVersion:2020, sourceType:'module'});
-    // collect string literals and create table
+
+    // collect string literals and numbers
     const stringTable = [];
     const stringIndex = new Map();
-    // collect numeric nodes to obfuscate optionally
-    const numbers = [];
+    const numericNodes = [];
 
-    // collect identifiers to rename (scoped-safe approach: simple)
-    const idMapGlobal = new Map();
-
-    // First pass: collect strings and numbers
-    walkAndReplace(ast, (node,parent,key,idx)=>{
+    walkAndReplace(ast, (node)=>{
       if(node.type === 'Literal' && typeof node.value === 'string'){
         const s = node.value;
         if(!stringIndex.has(s)){
@@ -256,96 +107,79 @@
         }
       }
       if(node.type === 'Literal' && typeof node.value === 'number'){
-        numbers.push(node);
-      }
-    });
-
-    // Generate encoded table (XOR -> base64)
-    const key = opts.xorKey & 0xFF;
-    const encTable = stringTable.map(s => {
-      // XOR encode then base64
-      const bytes = [];
-      for(let i=0;i<s.length;i++) bytes.push(s.charCodeAt(i)^key);
-      // convert to binary string
-      const bin = String.fromCharCode(...bytes);
-      return btoa(bin);
-    });
-
-    // Build decoder function AST snippet (we'll inject as a prefix string)
-    const tableVar = opts.prefix + '_strs';
-    const decName = opts.prefix + '_dec';
-    const headerCode = `
-const ${tableVar} = [${encTable.map(s=>JSON.stringify(s)).join(',')}];
-function ${decName}(i){
-  const b64 = ${tableVar}[i];
-  const s = atob(b64);
-  let out = '';
-  for(let k=0;k<s.length;k++) out += String.fromCharCode(s.charCodeAt(k) ^ ${key});
-  return out;
-}
-`.trim();
-
-    // Second pass: replace string literal nodes with CallExpression to decoder
-    walkAndReplace(ast, (node,parent,key,idx)=>{
-      if(node.type === 'Literal' && typeof node.value === 'string'){
-        const i = stringIndex.get(node.value);
-        // replace node in parent
-        const callNode = {
-          type: 'CallExpression',
-          callee: {type: 'Identifier', name: decName},
-          arguments: [{type:'Literal', value:i}]
-        };
-        if(Array.isArray(parent[key]) && idx!==null) parent[key][idx] = callNode;
-        else parent[key] = callNode;
-        return false;
+        numericNodes.push(node);
       }
       return true;
     });
 
-    // Identifier renaming: use acorn-walk-like approach? We'll do a safer simple approach:
-    // rename function/var/let/const/class declarations and their references using a map.
-    if(opts.rename){
-      // Step A: collect definitions by scanning declarations and function names
-      const defs = new Map();
-      walkAndReplace(ast, (node)=>{
-        if(node.type === 'FunctionDeclaration' && node.id && node.id.name && !isReservedGlobal(node.id.name)){
-          defs.set(node.id.name, uid(5));
-        } else if(node.type === 'VariableDeclarator' && node.id && node.id.type==='Identifier'){
-          const n = node.id.name;
-          if(!isReservedGlobal(n)) defs.set(n, uid(5));
-        } else if(node.type === 'ClassDeclaration' && node.id && node.id.name){
-          const n = node.id.name;
-          if(!isReservedGlobal(n)) defs.set(n, uid(5));
-        }
+    // If strings option off, skip building table
+    let headerCode = '';
+    const tableVar = opts.prefix + '_strs';
+    const decName = opts.prefix + '_dec';
+    if(opts.strings && stringTable.length > 0){
+      const key = opts.xorKey & 0xFF;
+      const encTable = stringTable.map(s=>{
+        const bytes = [];
+        for(let i=0;i<s.length;i++) bytes.push(s.charCodeAt(i)^key);
+        const bin = String.fromCharCode(...bytes);
+        return btoa(bin);
       });
-      // Step B: rename identifier occurrences (naive but scope-safe for many cases)
+      headerCode = `const ${tableVar}=[${encTable.map(s=>JSON.stringify(s)).join(',')}];\nfunction ${decName}(i){\n  const b64=${tableVar}[i];\n  const s=atob(b64);\n  let out='';\n  for(let k=0;k<s.length;k++) out+=String.fromCharCode(s.charCodeAt(k)^${key});\n  return out;\n}\n\n`;
+      // replace string literals with decoder calls
       walkAndReplace(ast, (node,parent,key,idx)=>{
-        if(node.type==='Identifier'){
-          const name = node.name;
-          if(defs.has(name) && !isReservedGlobal(name)){
-            node.name = opts.prefix + '_' + defs.get(name);
+        if(node.type === 'Literal' && typeof node.value === 'string'){
+          const i = stringIndex.get(node.value);
+          if(typeof i === 'number'){
+            const callNode = { type:'CallExpression', callee:{type:'Identifier', name:decName}, arguments:[{type:'Literal', value:i}] };
+            if(Array.isArray(parent[key]) && idx!==null) parent[key][idx] = callNode;
+            else parent[key] = callNode;
+            return false;
           }
         }
+        return true;
       });
     }
 
-    // Numeric obfuscation (only on high level)
+    // Identifier renaming (simple but safer)
+    if(opts.rename){
+      // collect declaration names (FunctionDeclaration, VariableDeclarator, ClassDeclaration)
+      const defs = new Map();
+      walkAndReplace(ast, (node)=>{
+        if(node.type === 'FunctionDeclaration' && node.id && node.id.name && !isReservedGlobal(node.id.name)){
+          defs.set(node.id.name, uid(6));
+        } else if(node.type === 'VariableDeclarator' && node.id && node.id.type==='Identifier'){
+          const n = node.id.name;
+          if(!isReservedGlobal(n)) defs.set(n, uid(6));
+        } else if(node.type === 'ClassDeclaration' && node.id && node.id.name){
+          const n = node.id.name;
+          if(!isReservedGlobal(n)) defs.set(n, uid(6));
+        }
+        return true;
+      });
+      // rename occurrences (naive replacement of Identifier nodes)
+      if(defs.size>0){
+        walkAndReplace(ast, (node)=>{
+          if(node.type === 'Identifier'){
+            const n = node.name;
+            if(defs.has(n) && !isReservedGlobal(n)){
+              node.name = opts.prefix + '_' + defs.get(n);
+            }
+          }
+          return true;
+        });
+      }
+    }
+
+    // Numeric obfuscation (high level only)
     if(opts.obfuscateNumbers){
       walkAndReplace(ast, (node,parent,key,idx)=>{
         if(node.type === 'Literal' && typeof node.value === 'number'){
           const n = node.value;
-          // produce ((n ^ off) ^ off) pattern using BinaryExpressions
           const off = Math.floor(Math.random()*1000)+1;
           const wrapped = {
-            type: 'BinaryExpression',
-            operator: '^',
-            left: {
-              type: 'BinaryExpression',
-              operator: '^',
-              left: {type:'Literal', value: n},
-              right: {type:'Literal', value: off}
-            },
-            right: {type:'Literal', value: off}
+            type: 'BinaryExpression', operator:'^',
+            left: { type:'BinaryExpression', operator:'^', left:{type:'Literal', value:n}, right:{type:'Literal', value:off} },
+            right: {type:'Literal', value:off}
           };
           if(Array.isArray(parent[key]) && idx!==null) parent[key][idx] = wrapped;
           else parent[key] = wrapped;
@@ -355,14 +189,12 @@ function ${decName}(i){
       });
     }
 
-    // Generate code with astring
-    const generated = astring.generate(ast, {indent: '  '});
-    // Prepend header (table + decoder)
-    let final = headerCode + '\n\n' + generated;
+    // generate code
+    const generated = astring.generate(ast, {indent:'  '});
+    let final = headerCode + generated;
 
-    // Optionally wrap in IIFE with prefix signature for more obfuscation
     if(opts.level >= 2){
-      final = `(function(${opts.prefix}_g){try{\n${final}\n}catch(e){console.error('${opts.prefix}_err',e);throw e;}})('${uid(10)}');`;
+      final = `(function(${opts.prefix}_g){try{\n${final}\n}catch(e){console.error('${opts.prefix}_err',e);throw e;}})('${uid(12)}');`;
     }
 
     return final;
@@ -378,7 +210,7 @@ function ${decName}(i){
       obfuscateNumbers: document.getElementById('numbers').checked,
       prefix: (document.getElementById('prefix').value || 'AruCube').replace(/[^A-Za-z0-9_]/g,'') || 'AruCube',
       xorKey: (()=>{ let k = document.getElementById('xorKey').value||'0x5a'; if(/^0x[0-9a-fA-F]+$/.test(k)) return parseInt(k,16); return 0x5a; })(),
-      level: parseInt(document.getElementById('level')?.value||'2',10)
+      level: parseInt(document.getElementById('level').value||'2',10)
     };
     try{
       const out = obfuscateWithAST(src, opts);
@@ -392,7 +224,7 @@ function ${decName}(i){
   document.getElementById('copy').addEventListener('click', ()=>{
     const t = document.getElementById('out').textContent || '';
     if(!t) return alert('出力がありません');
-    navigator.clipboard.writeText(t).then(()=>alert('コピーしました'));
+    navigator.clipboard.writeText(t).then(()=>alert('コピーしました')).catch(()=>alert('コピーに失敗しました'));
   });
 
   document.getElementById('download').addEventListener('click', ()=>{
@@ -404,31 +236,30 @@ function ${decName}(i){
   });
 
   document.getElementById('showPreview').addEventListener('click', ()=>{
-    // quick attempt to eval a small sample if safe - we will not execute user code, only show decoded strings preview
     const out = document.getElementById('out').textContent || '';
     if(!out) return alert('出力がありません');
-    // try to extract the table from produced output via regex (safer than eval)
-    const m = out.match(/const\\s+(\\w+_strs)\\s*=\\s*\\[(.*?)\\];/s);
+    // extract table by regex
+    const re = new RegExp('const\\s+(\\w+_strs)\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*;');
+    const m = out.match(re);
     if(!m) return alert('文字列テーブルが見つかりません');
     const arrText = '[' + m[2] + ']';
     try{
-      const arr = eval(arrText); // these are base64 strings only
-      const keyMatch = out.match(/String.fromCharCode\\(s.charCodeAt\\(k\\) \\^ (\\d+)\\)/);
+      const arr = eval(arrText); // base64 strings only
+      const keyMatch = out.match(/atob\\(b64\\);[\\s\\S]*?charCodeAt\\(k\\) \\^ (\\d+)/) || out.match(/charCodeAt\\(k\\) \\^ (\\d+)/);
       const key = keyMatch ? parseInt(keyMatch[1],10) : null;
-      if(key===null) return alert('XOR キーが検出できません');
+      if(key === null) return alert('XOR キーが検出できません');
       const decoded = arr.map(b64=>{
         const s = atob(b64);
-        let o='';
-        for(let i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)^key);
+        let o=''; for(let i=0;i<s.length;i++) o+=String.fromCharCode(s.charCodeAt(i)^key);
         return o;
       });
-      alert('デコードプレビュー（先頭20件まで）:\\n' + decoded.slice(0,20).join('\\n---\\n'));
+      alert('デコードプレビュー（先頭20件まで）:\n' + decoded.slice(0,20).join('\n---\n'));
     }catch(e){
-      console.error(e); alert('プレビューに失敗しました（コンソールを確認）');
+      console.error(e);
+      alert('プレビューに失敗しました（コンソールを確認）');
     }
   });
 
-  // expose acorn.walk if available (some builds)
   </script>
 </body>
 </html>
