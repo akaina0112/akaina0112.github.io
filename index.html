@@ -367,7 +367,7 @@ shareBtn.onclick=()=>{
   const url=`${location.origin}${location.pathname}?data=${encoded}`;
   navigator.clipboard.writeText(url).then(()=>alert("URLをコピーしました！")).catch(()=>alert("URLコピーに失敗"));
 };
-
+/*
 saveResultsBtn.onclick = () => {
   if (allResultsDiv.style.display === "none") return alert("結果一覧を表示してください");
 
@@ -402,7 +402,57 @@ saveResultsBtn.onclick = () => {
     container.style.height = originalHeight;
     container.style.overflow = originalOverflow;
   });
+};*/
+  saveResultsBtn.onclick = () => {
+  if (allResultsDiv.style.display === "none") {
+    alert("結果一覧を表示してください");
+    return;
+  }
+
+  const container = resultsContainer;
+
+  // ===== 元の状態保存 =====
+  const originalStyle = {
+    height: container.style.height,
+    maxHeight: container.style.maxHeight,
+    overflow: container.style.overflow,
+    overflowY: container.style.overflowY
+  };
+
+  // ===== 結果の長さに合わせる =====
+  container.style.height = "auto";
+  container.style.height = container.scrollHeight + "px";
+  container.style.maxHeight = "none";
+  container.style.overflow = "visible";
+  container.style.overflowY = "visible";
+
+  // ===== タイトル追加 =====
+  const titleText = document.createElement("div");
+  titleText.textContent = "荒野行動_縛りルーレット_結果";
+  titleText.style.cssText = `
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+  `;
+  container.insertBefore(titleText, container.firstChild);
+
+  // ===== PNG保存 =====
+  html2canvas(container, { scale: 2 }).then(canvas => {
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = "荒野行動_縛りルーレット_結果.png";
+    link.click();
+  }).catch(err => {
+    console.error("PNG保存失敗:", err);
+    alert("PNG保存に失敗しました。");
+  }).finally(() => {
+    // ===== 後始末 =====
+    container.removeChild(titleText);
+    Object.assign(container.style, originalStyle);
+  });
 };
+
 saveResultsBtn2.onclick = () => {
   if (punishmentsDiv.style.display === "none") return alert("罰ゲーム一覧を表示してください");
 
@@ -473,6 +523,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
