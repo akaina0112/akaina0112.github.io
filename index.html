@@ -462,40 +462,62 @@ saveResultsBtn.onclick = async () => {
   });
 };
 
-
-saveResultsBtn2.onclick = () => {
-  if (punishmentsDiv.style.display === "none") return alert("罰ゲーム一覧を表示してください");
+saveResultsBtn2.onclick = async () => {
+  if (punishmentsDiv.style.display === "none") {
+    alert("罰ゲーム一覧を表示してください");
+    return;
+  }
 
   const container = punishmentsContent;
-  const originalHeight = container.style.height;
-  const originalOverflow = container.style.overflow;
-  container.style.height = container.scrollHeight + "px";
-  container.style.overflow = "visible";
 
-  // タイトルを追加
+  // ===== 元スタイル保存 =====
+  const originalStyle = {
+    position: container.style.position,
+    transform: container.style.transform,
+    height: container.style.height,
+    maxHeight: container.style.maxHeight,
+    overflow: container.style.overflow,
+    overflowY: container.style.overflowY
+  };
+
+  // ===== 保存時だけ無効化 =====
+  container.style.position = "static";
+  container.style.transform = "none";
+  container.style.height = "auto";
+  container.style.maxHeight = "none";
+  container.style.overflow = "visible";
+  container.style.overflowY = "visible";
+
+  // DOM反映待ち
+  await new Promise(r => requestAnimationFrame(r));
+
+  // 高さを中身に合わせる
+  const extra = 30;
+  container.style.height = container.scrollHeight + extra + "px";
+
+  // ===== タイトル追加 =====
   const titleText = document.createElement("div");
   titleText.textContent = "荒野行動_縛りルーレット_罰ゲーム";
-  titleText.style.fontSize = "24px";
-  titleText.style.fontWeight = "bold";
-  titleText.style.textAlign = "center";
-  titleText.style.marginBottom = "10px";
+  titleText.style.cssText = `
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 12px;
+  `;
   container.insertBefore(titleText, container.firstChild);
 
-  html2canvas(container, { scale: 2 }).then(canvas => {
+  await new Promise(r => requestAnimationFrame(r));
+
+  // ===== PNG生成 =====
+  html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
     link.download = "荒野行動_縛りルーレット_罰ゲーム.png";
     link.click();
   }).finally(() => {
+    // ===== 復元 =====
     container.removeChild(titleText);
-    container.style.height = originalHeight;
-    container.style.overflow = originalOverflow;
-  }).catch(err => {
-    console.error("PNG保存失敗:", err);
-    alert("PNG保存に失敗しました。");
-    container.removeChild(titleText);
-    container.style.height = originalHeight;
-    container.style.overflow = originalOverflow;
+    Object.assign(container.style, originalStyle);
   });
 };
 
@@ -533,6 +555,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
