@@ -252,8 +252,9 @@ shuffleBtn.onclick=async()=>{
       break;
     }
     await spinRoulette(2000);
-    const weapon1=modeWeapons[Math.floor(Math.random()*modeWeapons.length)];
-    results[key][name]=`${weapon1}, 自由な武器 (罰ゲーム:${punishmentText}) [${getModeLabel()}]`;
+    const weapon1=modeWeapons[Math.floor(Math.random()*modeWeapons.length)];;
+    const weapon2=modeWeapons[Math.floor(Math.random()*modeWeapons.length)];
+    results[key][name]=`${weapon1}, ${weapon2} (罰ゲーム:${punishmentText}) [${getModeLabel()}]`;
     punishments[name]=punishments[name]||[];
     punishments[name].push(`試合${currentMatch}:${punishmentText}`);
   } else {
@@ -454,6 +455,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
