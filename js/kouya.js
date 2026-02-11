@@ -9,7 +9,7 @@ const weapons=[
 const weapons2 = [
  "95式","G36C","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X",
  "Dual TMP","UZI","MK5","MP5","PP2000","05式","P90",
- "AWM","CS","AMR-83","M24","爆裂弓","SVD",
+ "AWM","CS","M24","爆裂弓","SVD",
  "M860","M88C","SK12"
 ];
 //メンスト
