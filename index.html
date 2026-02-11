@@ -403,7 +403,7 @@ saveResultsBtn.onclick = () => {
     container.style.overflow = originalOverflow;
   });
 };*/
-  saveResultsBtn.onclick = () => {
+saveResultsBtn.onclick = async () => {
   if (allResultsDiv.style.display === "none") {
     alert("結果一覧を表示してください");
     return;
@@ -411,20 +411,30 @@ saveResultsBtn.onclick = () => {
 
   const container = resultsContainer;
 
-  // ===== 元の状態保存 =====
+  // ===== 元スタイル保存 =====
   const originalStyle = {
+    position: container.style.position,
+    transform: container.style.transform,
     height: container.style.height,
     maxHeight: container.style.maxHeight,
     overflow: container.style.overflow,
     overflowY: container.style.overflowY
   };
 
-  // ===== 結果の長さに合わせる =====
+  // ===== 保存時だけ無効化 =====
+  container.style.position = "static";
+  container.style.transform = "none";
   container.style.height = "auto";
-  container.style.height = container.scrollHeight + "px";
   container.style.maxHeight = "none";
   container.style.overflow = "visible";
   container.style.overflowY = "visible";
+
+  // DOM反映待ち
+  await new Promise(r => requestAnimationFrame(r));
+
+  // 高さを中身に合わせる
+  const extra = 30;
+  container.style.height = container.scrollHeight + extra + "px";
 
   // ===== タイトル追加 =====
   const titleText = document.createElement("div");
@@ -433,25 +443,25 @@ saveResultsBtn.onclick = () => {
     font-size: 24px;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   `;
   container.insertBefore(titleText, container.firstChild);
 
-  // ===== PNG保存 =====
-  html2canvas(container, { scale: 2 }).then(canvas => {
+  await new Promise(r => requestAnimationFrame(r));
+
+  // ===== PNG生成 =====
+  html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
     link.download = "荒野行動_縛りルーレット_結果.png";
     link.click();
-  }).catch(err => {
-    console.error("PNG保存失敗:", err);
-    alert("PNG保存に失敗しました。");
   }).finally(() => {
-    // ===== 後始末 =====
+    // ===== 復元 =====
     container.removeChild(titleText);
     Object.assign(container.style, originalStyle);
   });
 };
+
 
 saveResultsBtn2.onclick = () => {
   if (punishmentsDiv.style.display === "none") return alert("罰ゲーム一覧を表示してください");
@@ -523,6 +533,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
