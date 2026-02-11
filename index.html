@@ -132,7 +132,7 @@ let punishments = JSON.parse(localStorage.getItem("punishments")) || {};
 let currentMode = localStorage.getItem("currentMode") || "normal";
 
 // 🌐 URLデータ読み込み
-// ---------- ✅ 初期表示 & URL復元ロジック + 既存データ確認 ----------
+// ---------- ✅ 初期表示 & URL復元ロジック + 既存データ確認 ---------
 window.onload = () => {
   const url = new URL(window.location.href);
   const dataParam = url.searchParams.get("data");
@@ -144,16 +144,33 @@ window.onload = () => {
       results = data.results || {};
       punishments = data.punishments || {};
       currentMatch = data.currentMatch || 1;
+
       localStorage.setItem("players", JSON.stringify(players));
       localStorage.setItem("results", JSON.stringify(results));
       localStorage.setItem("punishments", JSON.stringify(punishments));
       localStorage.setItem("currentMatch", currentMatch);
-      console.log("✅ 保存データ:", {players, results, punishments, currentMatch});
+
+      console.log("✅ 保存データ:", { players, results, punishments, currentMatch });
+
       setupDiv.style.display = "none";
       rouletteDiv.style.display = "flex";
+
       updatePlayerDisplay();
       updateFavicon();
       updateTitle();
+
+      // --- ✅ 追加：その試合が終わってたら次の試合へ表示 ---
+      const key = `試合${currentMatch}`;
+      if (results[key] && players.length > 0) {
+        const finishedCount = Object.keys(results[key]).length;
+
+        if (finishedCount >= players.length) {
+          nextMatchBtn.style.display = "inline-block";
+          nextPlayerBtn.style.display = "none";
+        }
+      }
+      // --- 追加ここまで ---
+
       url.searchParams.delete("data");
       window.history.replaceState({}, document.title, url.pathname);
       return;
@@ -166,13 +183,14 @@ window.onload = () => {
     if (confirm("前回のデータがあります。リセットしますか？")) {
       localStorage.clear();
       location.reload(); // ✅完全初期化
-      console.log("✅ 保存データ:", {players, results, punishments, currentMatch});
+      console.log("✅ 保存データ:", { players, results, punishments, currentMatch });
       return;
     } else {
       players = JSON.parse(localStorage.getItem("players")) || [];
       results = JSON.parse(localStorage.getItem("results")) || {};
       punishments = JSON.parse(localStorage.getItem("punishments")) || {};
       currentMatch = parseInt(localStorage.getItem("currentMatch")) || 1;
+
       setupDiv.style.display = "none";
     }
   } else {
@@ -455,6 +473,7 @@ function updatePlayerDisplay(){const name=players[currentPlayerIndex];currentPla
 </script>
 </body>
 </html>
+
 
 
 
