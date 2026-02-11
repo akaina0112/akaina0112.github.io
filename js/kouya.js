@@ -1,3 +1,4 @@
+//通常
 const weapons=[
  "95式","G36C","AR18(89式)","M4A1","M4A4","SCAR-L","AK-47","SCAR-H","M16A4","AUG","RN94","AK14","M27","81式","HK50","AKAIpha","MC-X","ADS","APS",
  "Dual TMP","UZI","MK5","MP5","PP2000","05式","トンプソン","P90",
