@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Sprite Cutter</title>
+  <style>
+    img, canvas {
+      border: 1px solid #ccc;
+      margin: 5px;
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+<body>
+
+<textarea id="cssInput" rows="4" cols="80">
+background-image:url(https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png/revision/latest?cb=20240508103014&version=1686079357118);
+background-position:-80px -592px;
+</textarea>
+<br><br>
+
+<button onclick="cutImage()">切り抜き</button>
+
+<h3>元画像（プレビュー）</h3>
+<img id="previewImg">
+
+<h3>切り抜き結果</h3>
+<canvas id="canvas"></canvas>
+
+<br>
+<a id="download">ダウンロード</a>
+
+<script>
+function cutImage() {
+  const input = document.getElementById("cssInput").value;
+
+  // URL取得
+  const urlMatch = input.match(/url\((.*?)\)/);
+  if (!urlMatch) return alert("URLが見つかりません");
+  const url = urlMatch[1];
+
+  // position取得
+  const posMatch = input.match(/background-position:\s*(-?\d+)px\s*(-?\d+)px/);
+  if (!posMatch) return alert("positionが見つかりません");
+
+  let x = Math.abs(parseInt(posMatch[1]));
+  let y = Math.abs(parseInt(posMatch[2]));
+
+  const size = 16; // 必要なら変更
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = url;
+
+  // 元画像プレビュー表示
+  const preview = document.getElementById("previewImg");
+  preview.src = url;
+
+  img.onload = () => {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = size;
+    canvas.height = size;
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+
+    // ダウンロード
+    const link = document.getElementById("download");
+    link.href = canvas.toDataURL("image/png");
+    link.download = "cut.png";
+    link.textContent = "PNGダウンロード";
+  };
+}
+</script>
+
+</body>
+</html>
