@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Sprite Preview Tool</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+/* プレビュー */
+.preview-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+#previewImg {
+  image-rendering: pixelated;
+  width: 256px; /* 拡大表示 */
+  cursor: crosshair;
+}
+
+/* 座標表示 */
+.tooltip {
+  position: fixed;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* 赤枠 */
+#marker {
+  position: absolute;
+  border: 2px solid red;
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+}
+
+canvas {
+  margin-top: 10px;
+  border: 1px solid #ddd;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h3>画像プレビュー（クリックで切り抜き）</h3>
+
+  <div class="preview-wrap">
+    <img id="previewImg"
+      src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png">
+    <div id="marker"></div>
+  </div>
+
+  <div id="tooltip" class="tooltip" style="display:none;"></div>
+
+  <canvas id="canvas" width="16" height="16"></canvas>
+  <br>
+  <a id="download">ダウンロード</a>
+</div>
+
+<script>
+const size = 16;
+const img = document.getElementById("previewImg");
+const tooltip = document.getElementById("tooltip");
+const marker = document.getElementById("marker");
+
+// 切り抜き
+function cut(x, y) {
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.src = img.src;
+
+  image.onload = () => {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(image, x, y, size, size, 0, 0, size, size);
+
+    const link = document.getElementById("download");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `icon_${x}_${y}.png`;
+    link.textContent = `PNGダウンロード (${x},${y})`;
+  };
+}
+
+// 座標計算
+function getPos(e) {
+  const rect = img.getBoundingClientRect();
+  const scaleX = img.naturalWidth / rect.width;
+  const scaleY = img.naturalHeight / rect.height;
+
+  let clientX = e.clientX ?? e.touches[0].clientX;
+  let clientY = e.clientY ?? e.touches[0].clientY;
+
+  const x = Math.floor((clientX - rect.left) * scaleX);
+  const y = Math.floor((clientY - rect.top) * scaleY);
+
+  return { x, y, clientX, clientY };
+}
+
+// 移動（PC）
+img.addEventListener("mousemove", (e) => {
+  const { x, y, clientX, clientY } = getPos(e);
+
+  tooltip.style.display = "block";
+  tooltip.textContent = `${x}, ${y}`;
+  tooltip.style.left = clientX + 10 + "px";
+  tooltip.style.top = clientY + 10 + "px";
+
+  marker.style.left = (x / img.naturalWidth * img.width) + "px";
+  marker.style.top = (y / img.naturalHeight * img.height) + "px";
+});
+
+// スマホ
+img.addEventListener("touchmove", (e) => {
+  const { x, y, clientX, clientY } = getPos(e);
+
+  tooltip.style.display = "block";
+  tooltip.textContent = `${x}, ${y}`;
+  tooltip.style.left = clientX + 10 + "px";
+  tooltip.style.top = clientY + 10 + "px";
+});
+
+// クリック / タップで切り抜き
+img.addEventListener("click", (e) => {
+  const { x, y } = getPos(e);
+  cut(x, y);
+});
+
+img.addEventListener("touchstart", (e) => {
+  const { x, y } = getPos(e);
+  cut(x, y);
+});
+</script>
+
+</body>
+</html>
