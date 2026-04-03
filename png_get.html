@@ -1,72 +1,143 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Sprite Cutter</title>
-  <style>
-    img, canvas {
-      border: 1px solid #ccc;
-      margin: 5px;
-      image-rendering: pixelated;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Sprite Cutter</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    background: #f5f7fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 400px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  textarea {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    resize: none;
+    font-size: 14px;
+  }
+
+  button {
+    margin-top: 12px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #6ea8fe;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #4c8df6;
+  }
+
+  #preview {
+    width: 32px;
+    height: 32px;
+    margin: 15px auto;
+    background-image: url(https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png);
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transform: scale(2);
+  }
+
+  canvas {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    image-rendering: pixelated;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 12px;
+    text-decoration: none;
+    background: #34c759;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  a:hover {
+    background: #28a745;
+  }
+</style>
 </head>
+
 <body>
 
-<textarea id="cssInput" rows="4" cols="80">
-background-image:url(https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png/revision/latest?cb=20240508103014&version=1686079357118);
+<div class="container">
+  <h1>Sprite Cutter</h1>
+
+  <textarea id="cssInput">
 background-position:-80px -592px;
-</textarea>
-<br><br>
+  </textarea>
 
-<button onclick="cutImage()">切り抜き</button>
+  <button onclick="applyCSS()">適用＆切り抜き</button>
 
-<h3>元画像（プレビュー）</h3>
-<img id="previewImg">
+  <div id="preview"></div>
 
-<h3>切り抜き結果</h3>
-<canvas id="canvas"></canvas>
+  <canvas id="canvas" width="16" height="16"></canvas>
 
-<br>
-<a id="download">ダウンロード</a>
+  <br>
+  <a id="download">ダウンロード</a>
+</div>
 
 <script>
-function cutImage() {
+const FIXED_URL = "https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png";
+
+function applyCSS() {
   const input = document.getElementById("cssInput").value;
 
-  // URL取得
-  const urlMatch = input.match(/url\((.*?)\)/);
-  if (!urlMatch) return alert("URLが見つかりません");
-  const url = urlMatch[1];
+  const match = input.match(/(-?\d+)px\s+(-?\d+)px/);
+  if (!match) return alert("positionが不正");
 
-  // position取得
-  const posMatch = input.match(/background-position:\s*(-?\d+)px\s*(-?\d+)px/);
-  if (!posMatch) return alert("positionが見つかりません");
+  const posText = match[0];
 
-  let x = Math.abs(parseInt(posMatch[1]));
-  let y = Math.abs(parseInt(posMatch[2]));
+  // CSSプレビュー
+  const preview = document.getElementById("preview");
+  preview.style.backgroundPosition = posText;
 
-  const size = 16; // 必要なら変更
+  const x = Math.abs(parseInt(match[1]));
+  const y = Math.abs(parseInt(match[2]));
 
   const img = new Image();
   img.crossOrigin = "anonymous";
-  img.src = url;
-
-  // 元画像プレビュー表示
-  const preview = document.getElementById("previewImg");
-  preview.src = url;
+  img.src = FIXED_URL;
 
   img.onload = () => {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    canvas.width = size;
-    canvas.height = size;
+    ctx.clearRect(0, 0, 16, 16);
+    ctx.drawImage(img, x, y, 16, 16, 0, 0, 16, 16);
 
-    ctx.clearRect(0, 0, size, size);
-    ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
-
-    // ダウンロード
     const link = document.getElementById("download");
     link.href = canvas.toDataURL("image/png");
     link.download = "cut.png";
