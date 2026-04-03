@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Sprite Button Tool</title>
+<title>Sprite Tool</title>
 
 <style>
 body {
@@ -14,14 +14,25 @@ body {
 }
 
 .container {
+  display: flex;
+  gap: 30px;
   background: white;
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* 左：操作エリア */
+.left {
   text-align: center;
 }
 
-/* プレビュー */
+/* 右：プレビュー */
+.right {
+  text-align: center;
+}
+
+/* 画像 */
 .preview-wrap {
   position: relative;
   display: inline-block;
@@ -29,7 +40,7 @@ body {
 
 #previewImg {
   image-rendering: pixelated;
-  width: 256px; /* 表示サイズ（拡大） */
+  width: 256px; /* ←ここで左の表示サイズ変更 */
 }
 
 /* ボタンレイヤー */
@@ -42,16 +53,28 @@ body {
 .cell-btn {
   position: absolute;
   border: none;
-  background: rgba(0,0,0,0); /* 透明 */
+  background: transparent;
   cursor: pointer;
 }
 
 .cell-btn:hover {
-  background: rgba(0, 150, 255, 0.2);
+  background: rgba(0,150,255,0.2);
   outline: 1px solid #4c8df6;
 }
 
-/* 座標表示 */
+/* 右の大プレビュー */
+#bigPreview {
+  width: 160px; /* ←ここで大きさ変更 */
+  height: 160px; /* ←ここで大きさ変更 */
+  background-image: url(https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png);
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* 座標 */
 .tooltip {
   position: fixed;
   background: rgba(0,0,0,0.8);
@@ -72,26 +95,40 @@ canvas {
 <body>
 
 <div class="container">
-  <h3>アイコンをクリック</h3>
 
-  <div class="preview-wrap">
-    <img id="previewImg"
-      src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png">
-    <div id="overlay" class="overlay"></div>
+  <!-- 左 -->
+  <div class="left">
+    <h3>クリック選択</h3>
+
+    <div class="preview-wrap">
+      <img id="previewImg"
+        src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png">
+      <div id="overlay" class="overlay"></div>
+    </div>
   </div>
 
-  <div id="tooltip" class="tooltip" style="display:none;"></div>
+  <!-- 右 -->
+  <div class="right">
+    <h3>プレビュー</h3>
 
-  <canvas id="canvas" width="16" height="16"></canvas>
-  <br>
-  <a id="download">ダウンロード</a>
+    <div id="bigPreview"></div>
+
+    <div id="tooltip" class="tooltip" style="display:none;"></div>
+
+    <canvas id="canvas" width="16" height="16"></canvas>
+    <br>
+    <a id="download">ダウンロード</a>
+  </div>
+
 </div>
 
 <script>
-const size = 16;
+const size = 16; // ←アイコンサイズ（基本16）
+
 const img = document.getElementById("previewImg");
 const overlay = document.getElementById("overlay");
 const tooltip = document.getElementById("tooltip");
+const bigPreview = document.getElementById("bigPreview");
 
 // 切り抜き
 function cut(x, y) {
@@ -111,12 +148,13 @@ function cut(x, y) {
     link.download = `icon_${x}_${y}.png`;
     link.textContent = `PNGダウンロード (${x},${y})`;
   };
+
+  // 右プレビュー更新
+  bigPreview.style.backgroundPosition = `-${x}px -${y}px`;
 }
 
-// 画像ロード後にボタン生成
+// ボタン生成
 img.onload = () => {
-  const rect = img.getBoundingClientRect();
-
   const scaleX = img.width / img.naturalWidth;
   const scaleY = img.height / img.naturalHeight;
 
@@ -139,12 +177,14 @@ img.onload = () => {
       btn.style.width = (size * scaleX) + "px";
       btn.style.height = (size * scaleY) + "px";
 
-      // ホバー（PC）
+      // ホバー
       btn.addEventListener("mousemove", (e) => {
         tooltip.style.display = "block";
         tooltip.textContent = `${px}, ${py}`;
         tooltip.style.left = e.clientX + 10 + "px";
         tooltip.style.top = e.clientY + 10 + "px";
+
+        bigPreview.style.backgroundPosition = `-${px}px -${py}px`;
       });
 
       btn.addEventListener("mouseleave", () => {
@@ -158,9 +198,10 @@ img.onload = () => {
         tooltip.textContent = `${px}, ${py}`;
         tooltip.style.left = touch.clientX + 10 + "px";
         tooltip.style.top = touch.clientY + 10 + "px";
+
+        bigPreview.style.backgroundPosition = `-${px}px -${py}px`;
       });
 
-      // クリック
       btn.onclick = () => cut(px, py);
 
       overlay.appendChild(btn);
