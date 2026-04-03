@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Sprite Preview Tool</title>
+<title>Sprite Button Tool</title>
 
 <style>
 body {
@@ -29,8 +29,26 @@ body {
 
 #previewImg {
   image-rendering: pixelated;
-  width: 256px; /* 拡大表示 */
-  cursor: crosshair;
+  width: 256px; /* 表示サイズ（拡大） */
+}
+
+/* ボタンレイヤー */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.cell-btn {
+  position: absolute;
+  border: none;
+  background: rgba(0,0,0,0); /* 透明 */
+  cursor: pointer;
+}
+
+.cell-btn:hover {
+  background: rgba(0, 150, 255, 0.2);
+  outline: 1px solid #4c8df6;
 }
 
 /* 座標表示 */
@@ -42,16 +60,6 @@ body {
   padding: 4px 6px;
   border-radius: 6px;
   pointer-events: none;
-  z-index: 999;
-}
-
-/* 赤枠 */
-#marker {
-  position: absolute;
-  border: 2px solid red;
-  pointer-events: none;
-  width: 16px;
-  height: 16px;
 }
 
 canvas {
@@ -64,12 +72,12 @@ canvas {
 <body>
 
 <div class="container">
-  <h3>画像プレビュー（クリックで切り抜き）</h3>
+  <h3>アイコンをクリック</h3>
 
   <div class="preview-wrap">
     <img id="previewImg"
       src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/4/40/EntityCSS.png">
-    <div id="marker"></div>
+    <div id="overlay" class="overlay"></div>
   </div>
 
   <div id="tooltip" class="tooltip" style="display:none;"></div>
@@ -82,8 +90,8 @@ canvas {
 <script>
 const size = 16;
 const img = document.getElementById("previewImg");
+const overlay = document.getElementById("overlay");
 const tooltip = document.getElementById("tooltip");
-const marker = document.getElementById("marker");
 
 // 切り抜き
 function cut(x, y) {
@@ -105,54 +113,60 @@ function cut(x, y) {
   };
 }
 
-// 座標計算
-function getPos(e) {
+// 画像ロード後にボタン生成
+img.onload = () => {
   const rect = img.getBoundingClientRect();
-  const scaleX = img.naturalWidth / rect.width;
-  const scaleY = img.naturalHeight / rect.height;
 
-  let clientX = e.clientX ?? e.touches[0].clientX;
-  let clientY = e.clientY ?? e.touches[0].clientY;
+  const scaleX = img.width / img.naturalWidth;
+  const scaleY = img.height / img.naturalHeight;
 
-  const x = Math.floor((clientX - rect.left) * scaleX);
-  const y = Math.floor((clientY - rect.top) * scaleY);
+  const cols = Math.floor(img.naturalWidth / size);
+  const rows = Math.floor(img.naturalHeight / size);
 
-  return { x, y, clientX, clientY };
-}
+  overlay.style.width = img.width + "px";
+  overlay.style.height = img.height + "px";
 
-// 移動（PC）
-img.addEventListener("mousemove", (e) => {
-  const { x, y, clientX, clientY } = getPos(e);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const btn = document.createElement("button");
+      btn.className = "cell-btn";
 
-  tooltip.style.display = "block";
-  tooltip.textContent = `${x}, ${y}`;
-  tooltip.style.left = clientX + 10 + "px";
-  tooltip.style.top = clientY + 10 + "px";
+      const px = x * size;
+      const py = y * size;
 
-  marker.style.left = (x / img.naturalWidth * img.width) + "px";
-  marker.style.top = (y / img.naturalHeight * img.height) + "px";
-});
+      btn.style.left = (px * scaleX) + "px";
+      btn.style.top = (py * scaleY) + "px";
+      btn.style.width = (size * scaleX) + "px";
+      btn.style.height = (size * scaleY) + "px";
 
-// スマホ
-img.addEventListener("touchmove", (e) => {
-  const { x, y, clientX, clientY } = getPos(e);
+      // ホバー（PC）
+      btn.addEventListener("mousemove", (e) => {
+        tooltip.style.display = "block";
+        tooltip.textContent = `${px}, ${py}`;
+        tooltip.style.left = e.clientX + 10 + "px";
+        tooltip.style.top = e.clientY + 10 + "px";
+      });
 
-  tooltip.style.display = "block";
-  tooltip.textContent = `${x}, ${y}`;
-  tooltip.style.left = clientX + 10 + "px";
-  tooltip.style.top = clientY + 10 + "px";
-});
+      btn.addEventListener("mouseleave", () => {
+        tooltip.style.display = "none";
+      });
 
-// クリック / タップで切り抜き
-img.addEventListener("click", (e) => {
-  const { x, y } = getPos(e);
-  cut(x, y);
-});
+      // スマホ
+      btn.addEventListener("touchstart", (e) => {
+        const touch = e.touches[0];
+        tooltip.style.display = "block";
+        tooltip.textContent = `${px}, ${py}`;
+        tooltip.style.left = touch.clientX + 10 + "px";
+        tooltip.style.top = touch.clientY + 10 + "px";
+      });
 
-img.addEventListener("touchstart", (e) => {
-  const { x, y } = getPos(e);
-  cut(x, y);
-});
+      // クリック
+      btn.onclick = () => cut(px, py);
+
+      overlay.appendChild(btn);
+    }
+  }
+};
 </script>
 
 </body>
