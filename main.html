@@ -11,24 +11,24 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    -webkit-text-size-adjust: 100%; /* iOSの自動文字サイズ調整をオフ */
+    -webkit-text-size-adjust: 100%;
 }
 
-html,body{
+html, body{
     width:100%;
     height:100%;
     overflow:hidden;
-    /* iOSのSafariでバウンス（引っ張り）スクロールを完全に禁止 */
     position: fixed;
     touch-action: none;
+    background-color: #000; /* ベースの黒 */
 }
 
 body{
     width:100vw;
-    height:100dvh; /* Dynamic Viewport Height（iOSのアドレスバー対策） */
-    background: radial-gradient(circle, #222 0%, #000 75%);
+    height:100dvh;
+    /* 不気味な背景グラデーションをしっかり固定描画 */
+    background: radial-gradient(circle at center, #220000 0%, #111111 50%, #000000 90%);
     color:white;
-    /* iOS標準のヒラギノ角ゴを優先指定 */
     font-family:-apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 }
 
@@ -39,7 +39,7 @@ body::before{
     inset:0;
     background: repeating-linear-gradient(
         0deg,
-        rgba(255,255,255,.04) 0px,
+        rgba(255,255,255,.03) 0px,
         transparent 3px
     );
     animation:noise .15s infinite;
@@ -60,11 +60,12 @@ body::before{
     height:200%;
     background: radial-gradient(
         circle,
-        rgba(120,120,120,.15),
+        rgba(100,100,100,.12),
         transparent 60%
     );
     animation:fog 30s linear infinite;
     z-index: 1;
+    pointer-events: none;
 }
 
 @keyframes fog{
@@ -75,8 +76,8 @@ body::before{
 /* 表示文字 */
 .text{
     position:absolute;
-    transform: translate(-50%, -50%); /* 中央基準に配置 */
-    white-space: nowrap; /* 絶対に改行させない */
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
     width: max-content;
     max-width: 90vw;
     text-align:center;
@@ -121,7 +122,7 @@ body::before{
     position:absolute;
     inset:0;
     pointer-events:none;
-    box-shadow: inset 0 0 200px black;
+    box-shadow: inset 0 0 180px rgba(0,0,0,0.95);
     z-index: 4;
 }
 </style>
@@ -133,7 +134,7 @@ body::before{
 <div class="vignette"></div>
 
 <script>
-// ★ URL表示の偽装（https://domain.com/ 表示へ書き換え）
+// ★ URL表示の偽装
 if (window.history && window.history.replaceState) {
     window.history.replaceState(null, "", "/"); 
 }
@@ -174,11 +175,9 @@ function addText(){
     div.className = "text";
     div.textContent = words[Math.floor(Math.random() * words.length)];
 
-    // 画面内に確実に収まる配置（画面中心寄りの30%〜70%）
     div.style.left = (Math.random() * 40 + 30) + "vw";
     div.style.top = (Math.random() * 40 + 30) + "dvh";
 
-    // 文字色（赤・白・ごく稀に濃い赤）
     const colorRand = Math.random();
     if (colorRand > 0.6) {
         div.style.color = "#ff2222";
@@ -190,7 +189,6 @@ function addText(){
 
     document.body.appendChild(div);
 
-    // 古い文字を滑らかにフェードアウトして削除
     const texts = document.querySelectorAll(".text:not(.fade-out)");
     if(texts.length > 20){
         const oldText = texts[0];
@@ -203,7 +201,6 @@ function addText(){
 
 function loop(){
     addText();
-    // 0.8秒〜1.0秒（800ms〜1000ms）の間隔で出現
     setTimeout(loop, Math.random() * 200 + 800);
 }
 
