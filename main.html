@@ -2,29 +2,34 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Human Horror</title>
+<!-- iOSでの拡大・縮小や表示崩れを防ぐviewport設定 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My Feelings</title>
 
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
+    -webkit-text-size-adjust: 100%; /* iOSの自動文字サイズ調整をオフ */
 }
 
 html,body{
     width:100%;
     height:100%;
     overflow:hidden;
+    /* iOSのSafariでバウンス（引っ張り）スクロールを完全に禁止 */
+    position: fixed;
+    touch-action: none;
 }
 
 body{
     width:100vw;
-    height:100dvh;
+    height:100dvh; /* Dynamic Viewport Height（iOSのアドレスバー対策） */
     background: radial-gradient(circle, #222 0%, #000 75%);
     color:white;
-    font-family:"Yu Gothic", sans-serif;
-    position: relative;
+    /* iOS標準のヒラギノ角ゴを優先指定 */
+    font-family:-apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 }
 
 /* 画面ノイズ */
@@ -71,11 +76,11 @@ body::before{
 .text{
     position:absolute;
     transform: translate(-50%, -50%); /* 中央基準に配置 */
-    white-space: nowrap; /* ★ 絶対に改行させない */
-    width: max-content; /* 中身の文字幅に合わせる */
-    max-width: 90vw; /* 画面幅90%を超えたら収まるよう拡大率調整 */
+    white-space: nowrap; /* 絶対に改行させない */
+    width: max-content;
+    max-width: 90vw;
     text-align:center;
-    font-size:clamp(16px, 4.5vw, 45px); /* スマホで1行に収まりやすいよう少し小さめに調整 */
+    font-size:clamp(16px, 4.5vw, 45px);
     line-height:1.5;
     font-weight:bold;
     text-shadow: 0 0 10px red, 0 0 40px black;
@@ -83,6 +88,7 @@ body::before{
     opacity: 1;
     transition: opacity 1.2s ease, filter 1.2s ease;
     z-index: 3;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* 消滅時のフェードアウト */
@@ -127,6 +133,11 @@ body::before{
 <div class="vignette"></div>
 
 <script>
+// ★ URL表示の偽装（https://domain.com/ 表示へ書き換え）
+if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, "", "/"); 
+}
+
 const words=[
     // 元のテキスト
     "人は愚かだ", "人は争う", "人は裏切る", "人は嘘をつく", "人は奪う",
@@ -163,7 +174,7 @@ function addText(){
     div.className = "text";
     div.textContent = words[Math.floor(Math.random() * words.length)];
 
-    // スマホでも画面内に収まる配置（30%〜70%の範囲）
+    // 画面内に確実に収まる配置（画面中心寄りの30%〜70%）
     div.style.left = (Math.random() * 40 + 30) + "vw";
     div.style.top = (Math.random() * 40 + 30) + "dvh";
 
@@ -192,8 +203,8 @@ function addText(){
 
 function loop(){
     addText();
-    // 0.8秒〜1秒の間隔でランダム表示
-    setTimeout(loop, Math.random() * 1000 + 800);
+    // 0.8秒〜1.0秒（800ms〜1000ms）の間隔で出現
+    setTimeout(loop, Math.random() * 200 + 800);
 }
 
 loop();
