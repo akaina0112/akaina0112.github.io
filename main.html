@@ -71,11 +71,11 @@ body::before{
 .text{
     position:absolute;
     transform: translate(-50%, -50%); /* 中央基準に配置 */
-    width: auto;
-    max-width: 80vw; /* スマホでも画面幅の80%以内に収める */
+    white-space: nowrap; /* ★ 絶対に改行させない */
+    width: max-content; /* 中身の文字幅に合わせる */
+    max-width: 90vw; /* 画面幅90%を超えたら収まるよう拡大率調整 */
     text-align:center;
-    word-break: break-word; /* 画面端で自動折り返し */
-    font-size:clamp(18px, 5vw, 48px); /* スマホで見やすいフォントサイズ */
+    font-size:clamp(16px, 4.5vw, 45px); /* スマホで1行に収まりやすいよう少し小さめに調整 */
     line-height:1.5;
     font-weight:bold;
     text-shadow: 0 0 10px red, 0 0 40px black;
@@ -192,8 +192,8 @@ function addText(){
 
 function loop(){
     addText();
-    // 0.8秒〜2.5秒の間隔でランダム表示
-    setTimeout(loop, Math.random() * 1700 + 800);
+    // 0.8秒〜1秒の間隔でランダム表示
+    setTimeout(loop, Math.random() * 1000 + 800);
 }
 
 loop();
